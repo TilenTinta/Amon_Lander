@@ -6,8 +6,8 @@
 
   (title_block
     (title "Amon Board - Power")
-    (date "2022-10-19")
-    (rev "2.0")
+    (date "2023-02-15")
+    (rev "2.2")
     (company "Tinta T.")
   )
 
@@ -1494,7 +1494,7 @@
     (uuid fc51613d-61dd-4854-b6ea-cab94042dac4)
   )
 
-  (text "-Board battery \n  voltage sensing" (at 104.14 116.84 0)
+  (text "-Board battery \n  voltage sensing\n  R13, R15: 1%" (at 105.41 119.38 0)
     (effects (font (size 1 1)) (justify left bottom))
     (uuid 2253bb71-c778-4c7c-bdd6-3609344ae835)
   )
@@ -1518,11 +1518,11 @@
     (effects (font (size 0.7 0.7)) (justify left bottom))
     (uuid 635c176b-3bdb-4177-839d-16925a22f20f)
   )
-  (text "-EDF Battery \n  voltage sensing\n" (at 53.34 120.65 0)
+  (text "-EDF Battery \n  voltage sensing\n  R10, R11: 1%" (at 53.34 119.38 0)
     (effects (font (size 1 1)) (justify left bottom))
     (uuid 6bf5877e-a856-4c99-bc3c-7e37259576ba)
   )
-  (text "12V battery to:\n-6.0V,\n-5.0V\n-3.3V" (at 16.51 26.67 0)
+  (text "12V battery to:\n-5.0V\n-3.3V" (at 16.51 25.4 0)
     (effects (font (size 1 1)) (justify left bottom))
     (uuid 70c58e3c-d998-400b-8aad-af926e646079)
   )
@@ -1538,7 +1538,8 @@
     (effects (font (size 2 2) (thickness 0.4) bold italic) (justify left bottom))
     (uuid b7faeb92-49f9-44ef-aeff-d3a810e134fc)
   )
-  (text "R2 = 10k (1%)\nR1 = 10.81*(Vout-0.925) = 44k (1%)" (at 234.95 77.47 0)
+  (text "R2 (R21) = 10k (1%)\nR1 (R22) = 10.81*(Vout-0.925) = 44k (1%)"
+    (at 231.14 77.47 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid bce044b7-adaf-4cb1-8ec3-df033917edf6)
   )
@@ -1546,8 +1547,8 @@
     (effects (font (size 2 2) (thickness 0.4) bold italic) (justify left bottom))
     (uuid f3ee4c62-82db-4578-9326-030180539514)
   )
-  (text "R2 = 10k (1%)\nR1 = 10.81*(Vout-0.925) = 26.1k (1%)"
-    (at 121.92 77.47 0)
+  (text "R2 (R16) = 10k (1%)\nR1 (R17) = 10.81*(Vout-0.925) = 26.1k (1%)"
+    (at 119.38 77.47 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid f819d61c-d434-4be3-ab44-05434d5b2857)
   )

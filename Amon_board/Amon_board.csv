@@ -1,163 +1,65 @@
-Source:,;;;
-Date:,;2022 August 05, Friday 10:31:01;;
-Tool:,;Eeschema (6.0.2-0);;
-Component Count:,;99;;
-;;;
-Individual Components:;;;
-;;;
-Reference(s);Value;LibPart;Footprint
-BZ1;Buzzer;Device:Buzzer;Buzzer_Beeper:Buzzer_12x9.5RM7.6
-C1;10uF/50V;Device:C_Polarized_Small;Capacitor_Tantalum_SMD:CP_EIA-3216-10_Kemet-I
-C2;10uF/50V;Device:C_Polarized_Small;Capacitor_Tantalum_SMD:CP_EIA-3216-10_Kemet-I
-C3;10uF/50V;Device:C_Polarized_Small;Capacitor_Tantalum_SMD:CP_EIA-3216-10_Kemet-I
-C4;10uF/50V;Device:C_Polarized_Small;Capacitor_Tantalum_SMD:CP_EIA-3216-10_Kemet-I
-C5;0.1uF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C6;0.1uF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C7;0.1uF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C8;2200pF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C9;22pF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C10;22pF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C11;0.1uF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C12;0.1uF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C13;1uF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C14;100uF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C15;0.1uF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C16;0.1uF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C17;10uF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C18;0.1uF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C19;10uF/50V;Device:C_Polarized_Small;Capacitor_SMD:CP_Elec_4x5.4
-D1;B120-E3;Diode:B120-E3;Diode_SMD:D_SMA
-D2;B120-E3;Diode:B120-E3;Diode_SMD:D_SMA
-D3;Red;Device:LED_Small;LED_SMD:LED_0603_1608Metric
-D4;Red;Device:LED_Small;LED_SMD:LED_0603_1608Metric
-D5;RED;Device:LED;LED_SMD:LED_0603_1608Metric
-F1;1A;Device:Fuse_Small;Fuse:Fuse_1812_4532Metric
-J1;Switch_port;Connector:Screw_Terminal_01x02;TerminalBlock_4Ucon:TerminalBlock_4Ucon_1x02_P3.50mm_Horizontal
-J2;Jumper;Connector:Conn_01x02_Male;Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical
-J3;Micro_SD_Card;Connector:Micro_SD_Card;Connector_Card:microSD_HC_Hirose_DM3D-SF
-J4;USB2.0_C_Rev;Connector:USB_C_Receptacle_USB2.0;Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11
-J5;Conn_01x04_Male;Connector:Conn_01x04_Male;Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical
-J6;Conn_01x06_Male;Connector:Conn_01x06_Male;Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical
-J7;Conn_01x03_Male;Connector:Conn_01x03_Male;Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical
-J8;Conn_01x04_Male;Connector:Conn_01x04_Male;Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical
-J9;Conn_01x06_Male;Connector:Conn_01x06_Male;Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical
-J10;Red leds;Connector:Screw_Terminal_01x02;TerminalBlock_4Ucon:TerminalBlock_4Ucon_1x02_P3.50mm_Horizontal
-J11;XT60-M;XT60-M:XT60-M;XT60-M:AMASS_XT60-M
-J12;White leds;Connector:Screw_Terminal_01x02;TerminalBlock_4Ucon:TerminalBlock_4Ucon_1x02_P3.50mm_Horizontal
-J13;XT60-M;XT60-M:XT60-M;XT60-M:AMASS_XT60-M
-J14;Conn_02x04_Odd_Even;Connector_Generic:Conn_02x04_Odd_Even;Connector_PinHeader_2.54mm:PinHeader_2x04_P2.54mm_Vertical
-J15;Conn_01x04_Male;Connector:Conn_01x04_Male;Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical
-JP1;I2C address;Jumper:SolderJumper_3_Open;Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels
-M1;Servo_X+;Motor:Motor_Servo;Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical
-M2;Servo_X-;Motor:Motor_Servo;Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical
-M3;Servo_Y+;Motor:Motor_Servo;Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical
-M4;Servo_Y-;Motor:Motor_Servo;Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical
-Q1;2SC4213;Transistor_BJT:2SC4213;Package_TO_SOT_SMD:SOT-323_SC-70
-Q2;2SC4213;Transistor_BJT:2SC4213;Package_TO_SOT_SMD:SOT-323_SC-70
-Q3;BC817;Transistor_BJT:BC817;Package_TO_SOT_SMD:SOT-23
-Q4;BC817;Transistor_BJT:BC817;Package_TO_SOT_SMD:SOT-23
-R1;10k;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R2;10k;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R3;10k;Device:R;Resistor_SMD:R_0603_1608Metric
-R4;10k;Device:R;Resistor_SMD:R_0603_1608Metric
-R5;10k;Device:R;Resistor_SMD:R_0603_1608Metric
-R6;10k;Device:R;Resistor_SMD:R_0603_1608Metric
-R9;5.1k;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R10;5.1k;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R11;12k;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R12;12k;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R13;10k;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R14;100;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R15;100;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R16;100;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R17;100;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R18;10k;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R19;10k;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R20;10k;Device:R;Resistor_SMD:R_0603_1608Metric
-R21;10k;Device:R;Resistor_SMD:R_0603_1608Metric
-R22;10;Device:R;Resistor_SMD:R_0603_1608Metric
-R23;10;Device:R;Resistor_SMD:R_0603_1608Metric
-R24;100k;Device:R;Resistor_SMD:R_1206_3216Metric
-R25;10k;Device:R;Resistor_SMD:R_1206_3216Metric
-R26;330;Device:R;Resistor_SMD:R_0603_1608Metric
-R27;100k;Device:R;Resistor_SMD:R_1206_3216Metric
-R28;10k;Device:R;Resistor_SMD:R_1206_3216Metric
-SW1;SW_SPST;Switch:SW_SPST;Button_Switch_THT:SW_PUSH_6mm_H5mm
-SW2;SW_SPST;Switch:SW_SPST;Button_Switch_THT:SW_PUSH_6mm_H5mm
-TP1;TestPoint;Connector:TestPoint;TestPoint:TestPoint_Pad_D1.5mm
-TP2;TestPoint;Connector:TestPoint;TestPoint:TestPoint_Pad_D1.5mm
-TP3;TestPoint;Connector:TestPoint;TestPoint:TestPoint_Pad_D1.5mm
-TP4;TestPoint;Connector:TestPoint;TestPoint:TestPoint_Pad_D1.5mm
-TP5;TestPoint;Connector:TestPoint;TestPoint:TestPoint_Pad_D1.5mm
-TP6;TestPoint;Connector:TestPoint;TestPoint:TestPoint_Pad_D1.5mm
-TP7;TestPoint;Connector:TestPoint;TestPoint:TestPoint_Pad_D1.5mm
-TP8;TestPoint;Connector:TestPoint;TestPoint:TestPoint_Pad_D1.5mm
-TP9;TestPoint;Connector:TestPoint;TestPoint:TestPoint_Pad_D1.5mm
-TP10;TestPoint;Connector:TestPoint;TestPoint:TestPoint_Pad_D1.5mm
-TP11;TestPoint;Connector:TestPoint;TestPoint:TestPoint_Pad_D1.5mm
-TP12;TestPoint;Connector:TestPoint;TestPoint:TestPoint_Pad_D1.5mm
-TP13;TestPoint;Connector:TestPoint;TestPoint:TestPoint_Pad_D1.5mm
-U1;LM1117-3.3;Regulator_Linear:LM1117-3.3;Package_TO_SOT_SMD:SOT-223
-U2;L7805;Regulator_Linear:L7805;Package_TO_SOT_SMD:TO-263-2
-U3;ESP32-WROOM-32;RF_Module:ESP32-WROOM-32;RF_Module:ESP32-WROOM-32
-U4;MPU-6050;Sensor_Motion:MPU-6050;Sensor_Motion:InvenSense_QFN-24_4x4mm_P0.5mm
-U5;USBLC6-2P6;Power_Protection:USBLC6-2P6;Package_TO_SOT_SMD:SOT-666
-U6;CH340G;Interface_USB:CH340G;Package_SO:SOIC-16_3.9x9.9mm_P1.27mm
-U7;BME80;Sensor_Pressure:BMP280;Package_LGA:Bosch_LGA-8_2x2.5mm_P0.65mm_ClockwisePinNumbering
-Y1;12MHz;Device:Crystal_GND2_Small;Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm
-;;;
-;;;
-;;;
-;;;
-;;;
-Reference(s);Value;LibPart;Footprint
-BZ1;Buzzer;Device:Buzzer;Buzzer_Beeper:Buzzer_12x9.5RM7.6
-C1, C2, C3, C4;10uF/50V;Device:C_Polarized_Small;Capacitor_Tantalum_SMD:CP_EIA-3216-10_Kemet-I
-C5, C6, C7, C11, C12, C15, C16, C18;0.1uF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C8;2200pF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C9, C10;22pF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C13;1uF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C14;100uF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C17;10uF;Device:C_Small;Capacitor_SMD:C_0603_1608Metric
-C19;10uF/50V;Device:C_Polarized_Small;Capacitor_SMD:CP_Elec_4x5.4
-D1, D2;B120-E3;Diode:B120-E3;Diode_SMD:D_SMA
-D3, D4;Red;Device:LED_Small;LED_SMD:LED_0603_1608Metric
-D5;RED;Device:LED;LED_SMD:LED_0603_1608Metric
-F1;1A;Device:Fuse_Small;Fuse:Fuse_1812_4532Metric
-J1;Switch_port;Connector:Screw_Terminal_01x02;TerminalBlock_4Ucon:TerminalBlock_4Ucon_1x02_P3.50mm_Horizontal
-J2;Jumper;Connector:Conn_01x02_Male;Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical
-J3;Micro_SD_Card;Connector:Micro_SD_Card;Connector_Card:microSD_HC_Hirose_DM3D-SF
-J4;USB2.0_C_Rev;Connector:USB_C_Receptacle_USB2.0;Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11
-J5, J8, J15;Conn_01x04_Male;Connector:Conn_01x04_Male;Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical
-J6, J9;Conn_01x06_Male;Connector:Conn_01x06_Male;Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical
-J7;Conn_01x03_Male;Connector:Conn_01x03_Male;Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical
-J10;Red leds;Connector:Screw_Terminal_01x02;TerminalBlock_4Ucon:TerminalBlock_4Ucon_1x02_P3.50mm_Horizontal
-J11, J13;XT60-M;XT60-M:XT60-M;XT60-M:AMASS_XT60-M
-J12;White leds;Connector:Screw_Terminal_01x02;TerminalBlock_4Ucon:TerminalBlock_4Ucon_1x02_P3.50mm_Horizontal
-J14;Conn_02x04_Odd_Even;Connector_Generic:Conn_02x04_Odd_Even;Connector_PinHeader_2.54mm:PinHeader_2x04_P2.54mm_Vertical
-JP1;I2C address;Jumper:SolderJumper_3_Open;Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels
-M1;Servo_X+;Motor:Motor_Servo;Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical
-M2;Servo_X-;Motor:Motor_Servo;Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical
-M3;Servo_Y+;Motor:Motor_Servo;Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical
-M4;Servo_Y-;Motor:Motor_Servo;Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical
-Q1, Q2;2SC4213;Transistor_BJT:2SC4213;Package_TO_SOT_SMD:SOT-323_SC-70
-Q3, Q4;BC817;Transistor_BJT:BC817;Package_TO_SOT_SMD:SOT-23
-R1, R2, R13, R18, R19;10k;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R3, R4, R5, R6, R20, R21;10k;Device:R;Resistor_SMD:R_0603_1608Metric
-R9, R10;5.1k;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R11, R12;12k;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R14, R15, R16, R17;100;Device:R_Small;Resistor_SMD:R_0603_1608Metric
-R22, R23;10;Device:R;Resistor_SMD:R_0603_1608Metric
-R24, R27;100k;Device:R;Resistor_SMD:R_1206_3216Metric
-R25, R28;10k;Device:R;Resistor_SMD:R_1206_3216Metric
-R26;330;Device:R;Resistor_SMD:R_0603_1608Metric
-SW1, SW2;SW_SPST;Switch:SW_SPST;Button_Switch_THT:SW_PUSH_6mm_H5mm
-TP1, TP2, TP3, TP4, TP5, TP6, TP7, TP8, TP9, TP10, TP11, TP12, TP13;TestPoint;Connector:TestPoint;TestPoint:TestPoint_Pad_D1.5mm
-U1;LM1117-3.3;Regulator_Linear:LM1117-3.3;Package_TO_SOT_SMD:SOT-223
-U2;L7805;Regulator_Linear:L7805;Package_TO_SOT_SMD:TO-263-2
-U3;ESP32-WROOM-32;RF_Module:ESP32-WROOM-32;RF_Module:ESP32-WROOM-32
-U4;MPU-6050;Sensor_Motion:MPU-6050;Sensor_Motion:InvenSense_QFN-24_4x4mm_P0.5mm
-U5;USBLC6-2P6;Power_Protection:USBLC6-2P6;Package_TO_SOT_SMD:SOT-666
-U6;CH340G;Interface_USB:CH340G;Package_SO:SOIC-16_3.9x9.9mm_P1.27mm
-U7;BME80;Sensor_Pressure:BMP280;Package_LGA:Bosch_LGA-8_2x2.5mm_P0.65mm_ClockwisePinNumbering
-Y1;12MHz;Device:Crystal_GND2_Small;Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm
+Id;Designator;Package;Quantity;Designation
+1;JP2;SolderJumper-3_P2.0mm_Open_TrianglePad1.0x1.5mm_NumberLabels;1;I2C address
+2;H2,H1,H4,H3;MountingHole_3.2mm_M3_Pad_Via;4;MountingHole_Pad
+3;R7,R9,R8,R6;R_0603_1608Metric;4;100
+4;C14,C21,C16,C13,C10,C5,C34,C9,C7,C32,C8;C_0603_1608Metric;11;100nF
+5;J4,J5;AMASS_XT60-M;2;XT60-F
+6;J14;PinHeader_1x04_P2.54mm_Vertical;1;Conn_01x04_Male
+7;R25,R24,R26,R27;R_0603_1608Metric;4;1k
+8;R13,R10;R_1206_3216Metric;2;100k
+9;R34,R33,R32,R35;R_0603_1608Metric;4;330
+10;R12,R19;R_0603_1608Metric;2;100k
+11;L1,L2;L_10.4x10.4_H4.8;2;10uH 4A
+12;R22;R_0603_1608Metric;1;44k
+13;R17;R_0603_1608Metric;1;26k1
+14;C25,C27,C28;C_0603_1608Metric;3;0.1uF
+15;D4,D2,D1;D_SMA;3;B120-E3
+16;J7;TerminalBlock_MetzConnect_Type055_RT01502HDWU_1x02_P5.00mm_Horizontal;1;Red leds
+17;U3;SOIC-8_5.23x5.23mm_P1.27mm;1;W25Q128JVS
+18;R1,R2;R_0603_1608Metric;2;5k1
+19;J9,J6;PinSocket_2x04_P2.54mm_Vertical;2;Conn_02x04_Odd_Even
+20;U7;Bosch_LGA-8_2x2.5mm_P0.65mm_ClockwisePinNumbering;1;BME280
+21;J3;TerminalBlock_MetzConnect_Type055_RT01502HDWU_1x02_P5.00mm_Horizontal;1;Switch_port
+22;R3,R29,R30,R21,R28,R31,R16;R_0603_1608Metric;7;10k
+23;M4;PinHeader_1x03_P2.54mm_Vertical;1;Servo_Y-
+24;C15,C20;CP_EIA-3216-10_Kemet-I;2;10uF
+25;J2;IDC-Header_2x05_P2.54mm_Vertical;1;Conn_2x5 pin
+26;R18,R23;R_0603_1608Metric;2;1k5
+27;J8;TerminalBlock_MetzConnect_Type055_RT01502HDWU_1x02_P5.00mm_Horizontal;1;White leds
+28;J11;PinHeader_1x03_P2.54mm_Vertical;1;Conn_01x03_Male
+29;J1;USB_C_Receptacle_XKB_U262-16XN-4BVC11;1;USB2.0_C_Rev
+30;C12,C33,C11;C_0603_1608Metric;3;1uF
+31;JP3;SolderJumper-2_P1.3mm_Open_TrianglePad1.0x1.5mm;1;SolderJumper_2_Open
+32;C2,C1;C_0603_1608Metric;2;14pF
+33;U1;SOT-23-6_Handsoldering;1;USBLC6-2P6
+34;R4,R5;R_0603_1608Metric;2;4k7
+35;J12;JST_XH_S6B-XH-A-1_1x06_P2.50mm_Horizontal;1;Conn_01x06_Male
+36;M2;PinHeader_1x03_P2.54mm_Vertical;1;Servo_X-
+37;C24,C19;C_0603_1608Metric;2;22uF
+38;J10;AMPHENOL_GTFP08131Y2HR;1;GTFP08131Y2HR
+39;SW2;SW_Push_1P1T_NO_CK_KMR2;1;SW_SPST
+40;C3;C_0603_1608Metric;1;4.7uF
+41;U5,U4;SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.62x3.51mm;2;MP2303ADN
+42;FB1;L_1206_3216Metric_Pad1.22x1.90mm_HandSolder;1;100R 100MHz
+43;C31;C_0603_1608Metric;1;10uF
+44;C22,C17;C_0603_1608Metric;2;3.9nF
+45;R20,R14;R_0603_1608Metric;2;6k8
+46;SW1;SW_SPDT_PCM12;1;SW_DPDT
+47;J13;JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal;1;Conn_01x04_Male
+48;Y1;Crystal_SMD_3225-4Pin_3.2x2.5mm;1;25MHz
+49;C30,C26;CP_Elec_4x5.4;2;10uF
+50;D3,D5;LED_0603_1608Metric;2;Red
+51;C18,C23;C_0603_1608Metric;2;10nF
+52;R15,R11;R_1206_3216Metric;2;10k
+53;D7;LED_Cree-PLCC4_3.2x2.8mm_CCW;1;LED_RGBA
+54;Q1,Q2;SOT-23;2;BC817
+55;C4,C6;C_0603_1608Metric;2;2.2uF
+56;U2;LQFP-64_10x10mm_P0.5mm;1;STM32F405RGT6-LQFP64
+57;U6;InvenSense_QFN-24_4x4mm_P0.5mm;1;MPU-6050
+58;M1;PinHeader_1x03_P2.54mm_Vertical;1;Servo_X+
+59;JP1;SolderJumper-2_P1.3mm_Open_Pad1.0x1.5mm;1;SolderJumper_2_Open
+60;M3;PinHeader_1x03_P2.54mm_Vertical;1;Servo_Y+
+61;J15;PinHeader_1x06_P2.54mm_Vertical;1;Conn_01x06_Male
+62;C29;C_0603_1608Metric;1;2.2nF
+63;D6;LED_0603_1608Metric;1;RED
+64;H6,H5;MountingHole_3.2mm_M3;2;MountingHole
