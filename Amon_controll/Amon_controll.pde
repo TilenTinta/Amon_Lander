@@ -26,7 +26,13 @@ float tvc_xn = 0;
 float tvc_yp = 0;
 float tvc_yn = 0;
 
+boolean btnOver;
+MenuWindow WindowA;
+
 Serial myPort;
+String[] ports;
+boolean initWindowOpen = false;
+
 
 // Variables for Graphs
 int Graph_width = 450;     // width of graph
@@ -55,6 +61,13 @@ void setup()
   logo = loadImage("AMON_logo.png");
   nasa = createFont("nasalization-rg.otf", 20);
   txtDef = createFont("AndaleMono.vlw", 20);
+  
+  // serial
+  ports = Serial.list();
+  if (ports.length > 0){
+    myPort = new Serial(this, ports[0], 112500);
+  };
+
 }
 
 // Decoding recieved packets from lander
@@ -832,33 +845,49 @@ void draw() {
   // 6 - TVC Data
   stroke(0, 0, 0);
   fill(150, 150, 150);
-  rect(260, 450, 220, 200, 5);
+  rect(260, 430, 220, 160, 5);
 
   textFont(nasa);
   textSize(23);
   fill(255, 255, 255);
-  text("TVC", 350, 475);
-  line(270, 485, 470, 485);
+  text("TVC", 350, 455);
+  line(270, 465, 470, 465);
 
   textSize(18);
-  text("X+:", 270, 510);
-  text("X-:", 380, 510);
-  text("Y+:", 270, 550);
-  text("Y-:", 380, 550);
+  text("X+:", 270, 490);
+  text("X-:", 380, 490);
+  text("Y+:", 270, 530);
+  text("Y-:", 380, 530);
   
-  text("°", 360, 510);
-  text("°", 460, 510);
-  text("°", 360, 550);
-  text("°", 460, 550);
+  text("°", 360, 490);
+  text("°", 460, 490);
+  text("°", 360, 530);
+  text("°", 460, 530);
   
-  line(270, 565, 470, 565);
+  line(270, 545, 470, 545);
   
-  text("Status:", 270, 600);
+  text("Status:", 270, 573);
   if (amon_status == 3){
-    text("Active", 350, 600);
+    text("Active", 350, 573);
   }else{
-    text("OFF", 350, 600);
+    text("OFF", 350, 573);
   };
+  
+  /************* MENU Button *************/
+  stroke(0, 0, 0);
+  update(); // mouseX, mouseY
+  
+  if (OverBtn(260, 610, 220, 50)) {
+    fill(0, 150, 0);
+  } else {
+    fill(50, 50, 50);
+  }
+  rect(260, 610, 220, 50, 5);
+  
+  textFont(nasa);
+  textSize(25);
+  fill(255, 255, 255);
+  text("MENU", 330, 643);
 
   /************* Graphs *************/
 
@@ -918,4 +947,85 @@ void draw() {
   Graph_accel_z_data(1450, 680, testData);
 
   //}
+  
+  //************* SERIAL *************//
+  /*
+   while (myPort.available() > 0) {
+     int inByte = myPort.read();
+     println(inByte);
+  }
+  */
+}
+
+// Menu Btn update
+void update() {
+  if (OverBtn(260, 610, 220, 50)) {
+    btnOver = true;
+  } else {
+    btnOver = false;
+  }
+}
+
+// Over btn detect
+boolean OverBtn(int x, int y, int width, int height)  {
+  if (mouseX >= x && mouseX <= x+width && mouseY >= y && mouseY <= y+height) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+
+void mousePressed() {
+  if (OverBtn(260, 610, 220, 50)) {
+    WindowA = new MenuWindow(3, 500, 353, 400, 300);
+  }
+}
+
+
+class MenuWindow extends PApplet {
+  int id, vx, vy, vw, vh;
+
+  MenuWindow(int id, int vx, int vy, int vw, int vh) {
+    super();
+    this.id = id;
+    this.vx = vx;
+    this.vy = vy;
+    this.vw = vw;
+    this.vh = vh;
+
+    PApplet.runSketch(new String[] { this.getClass().getName() }, this);
+  }
+
+  void settings() {
+    size(600, 400);
+    smooth(0);
+  }
+
+  void setup() {
+    surface.setLocation(vx, vy);
+    
+    // check serial
+    ports = Serial.list();
+    if (ports > 0){
+      println("Available COM ports found!");
+    }else{
+        println("No available COM ports found!");
+    }
+  }
+
+  void draw() {
+    background(100, 100, 100);
+    
+    textFont(nasa);
+    textSize(15);
+    fill(255, 255, 255);
+    text("COM:", 20, 20);
+    
+    
+
+    
+    
+    WindowA.stop(); // ??
+  }
 }
