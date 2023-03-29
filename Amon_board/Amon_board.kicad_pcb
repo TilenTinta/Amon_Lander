@@ -9759,7 +9759,7 @@
   (gr_text "MOSI" (at 194.6656 71.1708 90) (layer "B.SilkS") (tstamp 9d108dd6-a660-433b-a219-975c1060402f)
     (effects (font (size 1 1) (thickness 0.2) italic) (justify mirror))
   )
-  (gr_text "IO" (at 215.947524 65.9892) (layer "B.SilkS") (tstamp a9c2be48-9e8b-47d3-8869-666c2ec1e15a)
+  (gr_text "SWDIO" (at 214.3252 65.9892) (layer "B.SilkS") (tstamp a9c2be48-9e8b-47d3-8869-666c2ec1e15a)
     (effects (font (size 1 1) (thickness 0.2) italic) (justify mirror))
   )
   (gr_text "2-1: 0x68\n2-3: 0x69" (at 223.3676 89.5604 90) (layer "B.SilkS") (tstamp b3302669-03b5-45f8-842a-d12fda8140c8)
