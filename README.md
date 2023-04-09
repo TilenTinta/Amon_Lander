@@ -5,7 +5,7 @@ Is an open source model of lander/hopper inspired by vehicle Sprite created
 by Joe Barnard from YouTube channel BPS.space.
 Channel: https://www.youtube.com/channel/UCILl8ozWuxnFYXIe2svjHhg
 
-
+![alt text](https://github.com/TilenTinta/Amon_Lander/blob/main/Pictures/lander_unfinished.jpg)
 
 Everithing was created from ground up (frame, electronics, firmware, programs...). 
 All the tools and programs used (at least most of them) are free and are available to
