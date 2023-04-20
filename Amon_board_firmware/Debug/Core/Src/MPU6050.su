@@ -1,0 +1,4 @@
+../Core/Src/MPU6050.c:9:9:MPU6050_ReadDeviceID	24	static
+../Core/Src/MPU6050.c:51:19:MPU6050_ReadRegister	40	static
+../Core/Src/MPU6050.c:55:19:MPU6050_ReadRegisters	40	static
+../Core/Src/MPU6050.c:59:19:MPU6050_WriteRegister	40	static
