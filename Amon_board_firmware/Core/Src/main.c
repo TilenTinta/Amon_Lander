@@ -18,11 +18,13 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "fatfs.h"
 #include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "usbd_cdc_if.h"
+//#include "usbd_cdc_if.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,6 +43,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+DMA_HandleTypeDef hdma_adc1;
 
 I2C_HandleTypeDef hi2c3;
 
@@ -50,8 +53,10 @@ TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
+TIM_HandleTypeDef htim5;
 
 UART_HandleTypeDef huart4;
+DMA_HandleTypeDef hdma_uart4_rx;
 
 /* USER CODE BEGIN PV */
 
@@ -60,6 +65,7 @@ UART_HandleTypeDef huart4;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_UART4_Init(void);
@@ -68,6 +74,7 @@ static void MX_I2C3_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_TIM5_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -78,16 +85,47 @@ static void MX_TIM4_Init(void);
 /* Functions init */
 uint16_t ADC_Read_Main_Battery();
 uint16_t ADC_Read_EDF_Battery();
+uint8_t TVCServoEnable();
+uint8_t TVCServoDisable();
+uint8_t EDFEnable();
+uint8_t EDFDisable();
+void StatusLED(uint8_t Status);
 
 /* Variables */
-uint8_t DroneStatus = 0; // status of drone
+uint8_t DroneStatusLocal = 0;
+uint8_t DroneStatusOld = 20;
+uint8_t StartupInit = 0;
 uint8_t InitError = 0;
 uint8_t LED_blink_cnt_ON;
+uint8_t LED_blink_cnt_double;
 uint8_t LED_blink_cnt_OFF;
+uint8_t TVCServoEnableFlag = 0;
+uint8_t EDFEnableFlag = 0;
+uint8_t RF_IRQ1_EN = 0;			// flag to enable irq code
+uint8_t RF_IRQ2_EN = 0;			// flag to enable irq code
 
+float PitchDef[20] = {0};		// Default values for calculating angle before flight
+float RollDef[20] = {0};
+uint8_t MeassCnt = 0;			// counting measurements
 
-uint8_t USART4_GPSRX[100] = {};
+// Gyroscope calibration
+uint8_t GyroCalibTrig = 0;
+uint16_t RGB_Red = 0;
+uint16_t RGB_Green = 300;
+uint16_t RGB_Blue = 600;
+uint16_t RGB_RedMax = 0;
+uint16_t RGB_GreenMax = 0;
+uint16_t RGB_BlueMax = 0;
 
+// Battery data
+uint32_t ADC_BAT_Val[2] = {};
+
+// GPS data
+uint8_t USART4_GPSRX[426] = {"\0"};
+
+// Timers IRQ enable flag
+uint8_t Reg50HzLoopEN = 0;
+uint8_t Reg200HzLoopEN = 0;
 
 
 /* USER CODE END 0 */
@@ -120,6 +158,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_SPI1_Init();
   MX_UART4_Init();
@@ -127,30 +166,43 @@ int main(void)
   MX_I2C3_Init();
   MX_TIM2_Init();
   MX_TIM1_Init();
-  MX_USB_DEVICE_Init();
   MX_TIM4_Init();
+  MX_USB_DEVICE_Init();
+  MX_TIM5_Init();
+  MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
 
   /* STRUCTS */
   MPU6050 mpu6050;
-  BME280  bme280;
+  BME280 bme280;
+
+  AMON_Drone AmonDrone;
+
+  GPS_GGA gps_gga;
+  GPS_GLL gps_gll;
+  GPS_GSA gps_gsa;
+  GPS_GSV gps_gsv;
+  GPS_RMC gps_rmc;
+  GPS_VTG gps_vtg;
+
+  VL53L1_DEV vl53l1Dev;
+  VL53L1X_Version_t vl53l1xVersion_t;
+  VL53L1X_Result_t vl53l1xResult_t;
 
   /* Variables */
-  uint16_t MainBat;
 
-  uint32_t ServoPWM = 0;
 
-  /*  */
+
+  // Init
+  AmonDrone.DroneStatus = 0;
+  AmonDrone.PitchOld = 0;
+  AmonDrone.RollOld = 0;
+
+
 
   /* DMA */
-  HAL_UART_Receive_DMA(&huart4, USART4_GPSRX, 100);
 
-  /* Inits */
-  HAL_TIM_Base_Start_IT(&htim4); // TVC LOOP (leg leds)
-  //HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
-  //HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
-  //HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
-  //HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
+
 
 
   /* USER CODE END 2 */
@@ -159,27 +211,352 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  DroneStatus = 1;
-	  HAL_GPIO_WritePin(LED_Red_GPIO_Port, LED_Red_Pin, GPIO_PIN_SET);
-	  BME280_Reset(&bme280, &hi2c3);
-	  BME280_ReadDeviceID(&bme280, &hi2c3);
-	  BME280_Init(&bme280, &hi2c3);
-	  BME280_ReadCalibData(&bme280, &hi2c3);
-	  BME280_ReadTemperature(&bme280, &hi2c3);
-	  BME280_ReadPressure(&bme280, &hi2c3);
-	  BME280_ReadHumidity(&bme280, &hi2c3);
-
-	  //MPU6050_ReadDeviceID(&mpu6050, &hi2c3);
-
-	  //MainBat = ADC_Read_Main_Battery();
-
-	  //65536-4299=60737
-
-		TIM3->CCR2 = 10;
-		TIM3->CCR1 = 100;
-		//ServoPWM += 10;
 
 
+	  if (AmonDrone.DroneStatus != DroneStatusOld && GYRO_CALIB == 0)
+	  {
+		  DroneStatusOld = AmonDrone.DroneStatus;
+		  DroneStatusLocal = AmonDrone.DroneStatus;
+		  StatusLED(AmonDrone.DroneStatus);
+	  }
+
+	  if (GYRO_CALIB == 1) // RGB cycling
+	  {
+		  AmonDrone.DroneStatus = STATUS_GYRO_CALIB;
+		  DroneStatusLocal = AmonDrone.DroneStatus;
+	  }
+
+	  /****************************
+	   * INIT  SEQUENCE
+	   ****************************/
+
+	  if (StartupInit == STATUS_STARTUP)
+	  {
+
+		//AmonDrone.DroneStatus = STATUS_STARTUP;
+		uint8_t status = 0;
+
+		/* Aligne all motors */
+		TVCServoEnable();
+		DegresToCCR(90.0 + SERVO_XN_OFFSET, SERVO_XN);
+		DegresToCCR(90.0 + SERVO_XP_OFFSET, SERVO_XP);
+		DegresToCCR(90.0 + SERVO_YN_OFFSET, SERVO_YN);
+		DegresToCCR(90.0 + SERVO_YP_OFFSET, SERVO_YP);
+		HAL_Delay(500); // wait on motors to stop mooving
+
+		DegresToCCR(80.0 + SERVO_XN_OFFSET, SERVO_XN);
+		DegresToCCR(80.0 + SERVO_XP_OFFSET, SERVO_XP);
+		DegresToCCR(80.0 + SERVO_YN_OFFSET, SERVO_YN);
+		DegresToCCR(80.0 + SERVO_YP_OFFSET, SERVO_YP);
+		HAL_Delay(500); // wait on motors to stop mooving
+
+		DegresToCCR(90.0 + SERVO_XN_OFFSET, SERVO_XN);
+		DegresToCCR(90.0 + SERVO_XP_OFFSET, SERVO_XP);
+		DegresToCCR(90.0 + SERVO_YN_OFFSET, SERVO_YN);
+		DegresToCCR(90.0 + SERVO_YP_OFFSET, SERVO_YP);
+		HAL_Delay(500); // wait on motors to stop mooving
+
+		DegresToCCR(100.0 + SERVO_XN_OFFSET, SERVO_XN);
+		DegresToCCR(100.0 + SERVO_XP_OFFSET, SERVO_XP);
+		DegresToCCR(100.0 + SERVO_YN_OFFSET, SERVO_YN);
+		DegresToCCR(100.0 + SERVO_YP_OFFSET, SERVO_YP);
+		HAL_Delay(500); // wait on motors to stop mooving
+
+		DegresToCCR(90.0 + SERVO_XN_OFFSET, SERVO_XN);
+		DegresToCCR(90.0 + SERVO_XP_OFFSET, SERVO_XP);
+		DegresToCCR(90.0 + SERVO_YN_OFFSET, SERVO_YN);
+		DegresToCCR(90.0 + SERVO_YP_OFFSET, SERVO_YP);
+		HAL_Delay(500); // wait on motors to stop mooving
+
+		HAL_ADC_Start_DMA(&hadc1, ADC_BAT_Val, 2);
+
+		HAL_GPIO_WritePin(LED_Red_GPIO_Port, LED_Red_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(LED_Brd_GPIO_Port, LED_Brd_Pin, GPIO_PIN_RESET);
+		HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2); // RGB (50Hz)
+		HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3); // RGB (50Hz)
+		HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3); // RGB (50Hz)
+
+		/* Read both batteries and save in drone data struct */
+		AmonDrone.MainBatVoltage = ADC_Read_Main_Battery();
+		AmonDrone.EDFBatVoltage = ADC_Read_EDF_Battery();
+		if (AmonDrone.MainBatVoltage < 1000) status++; // check board battery voltage (more than 10V)
+		//if (AmonDrone.EDFBatVoltage < 2000) status++; // check board battery voltage (more than 20V)
+
+		HAL_Delay(500);
+
+		/* Reset all devices */
+		status += BME280_Reset(&bme280, &hi2c3);
+		status += MPU6050_Reset(&mpu6050, &hi2c3);
+
+		HAL_Delay(500); // delay sensors config to complete power on
+
+		/* MBE280 */
+		status += BME280_ReadDeviceID(&bme280, &hi2c3);
+		status += BME280_ReadCalibData(&bme280, &hi2c3);
+		status += BME280_Init(&bme280, &hi2c3);
+
+		/* MPU6050 */
+		status += MPU6050_ReadDeviceID(&mpu6050, &hi2c3);
+		status += MPU6050_ReadFactoryTrim(&mpu6050, &hi2c3);
+		status += MPU6050_Init(&mpu6050, &hi2c3);
+		status += MPU6050_ReadFactoryTrim(&mpu6050, &hi2c3);
+		status += MPU6050_ReadAllDirect(&mpu6050, &hi2c3);
+		status += MPU6050_SelfTest(&mpu6050, &hi2c3);
+
+		/* vl53l1x */
+		uint8_t bootOK = 0;
+		status += VL53L1X_ReadID(&vl53l1Dev, &hi2c3);
+		while (bootOK == 0)
+		{
+			status += VL53L1X_BootState(&vl53l1Dev, &hi2c3, &bootOK);
+		}
+		status += VL53L1X_SensorInit(&vl53l1Dev, &hi2c3);
+		status += VL53L1X_SetTimingBudgetInMs(&vl53l1Dev, &hi2c3, 200); // 140ms is min for 4m distance
+		status += VL53L1X_SetOffset(&vl53l1Dev, &hi2c3, -130);
+		VL53L1X_StartRanging(&vl53l1Dev, &hi2c3);
+
+
+		HAL_TIM_Base_Start_IT(&htim4); // TVC LOOP, leg leds (50Hz)
+		HAL_TIM_Base_Start_IT(&htim5); // Complementary Filter
+
+		if (GYRO_CALIB == 0) HAL_UART_Receive_DMA(&huart4, USART4_GPSRX, 426); // Do not enable UART DMA if calibrating
+
+
+		if (bme280.dig_T1 == 0 || bme280.dig_T2 == 0) // for WTF error
+		{
+			status++;
+		}
+
+		InitError = status;
+
+		// Check if all init functionsa are OK
+		if (InitError == 0) // OK
+		{
+			StartupInit = 1;
+			AmonDrone.DroneStatus = STATUS_IDLE_NC;
+		}
+		else
+		{
+			StartupInit = 1;
+			AmonDrone.DroneStatus = STATUS_ERROR; // ERROR
+			HAL_GPIO_WritePin(LED_Brd_GPIO_Port, LED_Brd_Pin, GPIO_PIN_SET);
+		}
+
+	  }
+
+
+	  /****************************
+	   * SEQUENCE IDLE, ARM, FLY...
+	   ****************************/
+
+	  if (StartupInit != STATUS_STARTUP && AmonDrone.DroneStatus != STATUS_ERROR && GYRO_CALIB == 0)
+	  {
+
+		  /*** CURRENT DRONE STATUS ***/
+		  switch(AmonDrone.DroneStatus){
+
+		  case STATUS_IDLE_NC:							/*/ Drone ideling but no connection with link /*/
+
+			  if (TVCServoEnableFlag == 1) TVCServoDisable();
+			  if (EDFEnableFlag == 1) EDFDisable();
+
+			  if (Reg200HzLoopEN == 1) // Timer 4
+			  {
+				  MPU6050_ReadAllDirect(&mpu6050, &hi2c3);
+				  MPU6050_RawToDeg(&mpu6050, &AmonDrone); // calculate data to pitch and roll (and yaw)
+				  Reg200HzLoopEN = 0;
+			  }
+
+			  if (Reg50HzLoopEN == 1)	// Timer 5
+			  {
+
+				  uint8_t dataRdy = 0;
+				  while(dataRdy == 0)
+				  {
+					  VL53L1X_CheckForDataReady(&vl53l1Dev, &hi2c3, &dataRdy);
+				  }
+				  dataRdy = 0;
+				  VL53L1X_GetDistance(&vl53l1Dev, &hi2c3, &AmonDrone.Height);
+				  VL53L1X_ClearInterrupt(&vl53l1Dev, &hi2c3);
+				  // Read other sensors
+				  Reg50HzLoopEN = 0;
+			  }
+			  break;
+
+		  case STATUS_IDLE_CN: 							/*/ Drone ideling and is connected with link /*/
+
+			  if (TVCServoEnableFlag == 1) TVCServoDisable();
+			  if (EDFEnableFlag == 1) EDFDisable();
+
+			  if (Reg200HzLoopEN == 1) // Timer 4
+			  {
+			  	  MPU6050_ReadAllDirect(&mpu6050, &hi2c3);
+			  	  MPU6050_RawToDeg(&mpu6050, &AmonDrone); // calculate data to pitch and roll (and yaw)
+			  	  Reg200HzLoopEN = 0;
+			  }
+
+			  if (Reg50HzLoopEN == 1)	// Timer 5
+			  {
+ 				  uint8_t dataRdy = 0;
+  				  while(dataRdy == 0)
+  				  {
+  					  VL53L1X_CheckForDataReady(&vl53l1Dev, &hi2c3, &dataRdy);
+			  	  }
+			  	  dataRdy = 0;
+			  	  VL53L1X_GetDistance(&vl53l1Dev, &hi2c3, &AmonDrone.Height);
+			  	  VL53L1X_ClearInterrupt(&vl53l1Dev, &hi2c3);
+			  	// Read other sensors...
+			  	  Reg50HzLoopEN = 0;
+			  }
+			  break;
+
+		  case STATUS_ARM:								/*/ Drone is armet to take off /*/
+
+			  if (TVCServoEnableFlag == 0) TVCServoEnable();
+			  if (EDFEnableFlag == 0) EDFEnable();
+
+			  if (Reg200HzLoopEN == 1) // Timer 4
+			  {
+			  	  MPU6050_ReadAllDirect(&mpu6050, &hi2c3);
+			  	  MPU6050_RawToDeg(&mpu6050, &AmonDrone); // calculate data to pitch and roll (and yaw)
+			  	  Reg200HzLoopEN = 0;
+			  }
+
+			  if (Reg50HzLoopEN == 1 && MeassCnt < 20)	// Timer 5
+			  {
+				  PitchDef[MeassCnt] = AmonDrone.Pitch;
+				  RollDef[MeassCnt] = AmonDrone.Roll;
+				  MeassCnt++;
+
+				  if (MeassCnt == 20)
+				  {
+					  float PitchSum = 0;
+					  float RollSum = 0;
+
+					  for (int i = 0; i < 20; i++)
+					  {
+						  PitchSum += PitchDef[i];
+						  RollSum += RollDef[i];
+					  }
+
+					  AmonDrone.PitchMean = PitchSum / 20;
+					  AmonDrone.RollMean = RollSum / 20;
+				  }
+
+
+				  uint8_t dataRdy = 0;
+				  while(dataRdy == 0)
+				  {
+				  	  VL53L1X_CheckForDataReady(&vl53l1Dev, &hi2c3, &dataRdy);
+				  }
+				  dataRdy = 0;
+				  VL53L1X_GetDistance(&vl53l1Dev, &hi2c3, &AmonDrone.Height);
+				  VL53L1X_ClearInterrupt(&vl53l1Dev, &hi2c3);
+				  // Read other sensors...
+
+				  Reg50HzLoopEN = 0;
+			  }
+			  break;
+
+		  case STATUS_FLY:								/*/ Flying /*/
+
+			  // add init level value
+			  DegresToCCR(90.0f + AmonDrone.Pitch + (AmonDrone.PitchMean) + SERVO_XN_OFFSET, SERVO_XN);
+			  DegresToCCR(90.0f - AmonDrone.Pitch + (AmonDrone.PitchMean) + SERVO_XP_OFFSET, SERVO_XP);
+			  DegresToCCR(90.0f - AmonDrone.Roll + (AmonDrone.RollMean) + SERVO_YN_OFFSET, SERVO_YN);
+			  DegresToCCR(90.0f + AmonDrone.Roll + (AmonDrone.RollMean) + SERVO_YP_OFFSET, SERVO_YP);
+
+
+			  break;
+
+		  case STATUS_FLY_OVER:							/*/ Dron landed (after flying) /*/
+
+			  if (TVCServoEnableFlag == 1) TVCServoDisable();
+			  if (EDFEnableFlag == 1) EDFDisable();
+
+			  if (Reg200HzLoopEN == 1) // Timer 4
+			  {
+				  MPU6050_ReadAllDirect(&mpu6050, &hi2c3);
+			  	  MPU6050_RawToDeg(&mpu6050, &AmonDrone); // calculate data to pitch and roll (and yaw)
+			  	  Reg200HzLoopEN = 0;
+			  }
+
+			  if (Reg50HzLoopEN == 1)	// Timer 5
+			  {
+ 				  uint8_t dataRdy = 0;
+  				  while(dataRdy == 0)
+  				  {
+  					  VL53L1X_CheckForDataReady(&vl53l1Dev, &hi2c3, &dataRdy);
+  				  }
+  				  dataRdy = 0;
+ 				  VL53L1X_GetDistance(&vl53l1Dev, &hi2c3, &AmonDrone.Height);
+  				  VL53L1X_ClearInterrupt(&vl53l1Dev, &hi2c3);
+ 				  // Read other sensors...
+  				  // save to sd...
+  				  Reg50HzLoopEN = 0;
+			  }
+			  break;
+
+		  default:
+			  AmonDrone.DroneStatus = STATUS_ERROR;		/*/ Wrong state /*/
+			  TVCServoDisable();
+			  EDFDisable();
+			  break;
+		  }
+	  }
+
+
+	  /* ********* GYROSCOPE Calibration *********
+	   * Before using gyroscope is necessary to set right offset values for all three accelerometers.
+	   * This is set in MPU6050.h file (#define X_ACCEL_OFFSET, X_ACCEL_OFFSET, X_ACCEL_OFFSET)
+	   * To get these values change GYRO_CALIB value to 1 and reupload code on board
+	   * Disconnect everything from the board and unmount it from drone.
+	   * On GPS port connect FTDI module to read UART communication. DO NOT CONNECT POWER PIN (3.3V) IF YOU ARE PLANNING TO POWER THE BOARD FROM BATTERY !!!
+	   * Open serial port on PC and connect to FTDI. After initialization the dron will start to read data from gyroscope and send it over UART.
+	   * Rotate board in all three directions (flat, vertical and sideways) at 90deg. In every position the one value will be around 1.
+	   * The difference value and 1 is the offset value. Enter that value in firmware as offset.
+	   * Change GYRO_CALIB back to 0, reupload code and mount board bact to drone
+	   */
+
+	  if (GYRO_CALIB == 1 )
+	  {
+		  StatusLED(AmonDrone.DroneStatus);
+		  /*
+		  if (Reg200HzLoopEN == 1){
+
+			  MPU6050_ReadAllDirect(&mpu6050, &hi2c3); // Read all raw data from sensor
+		  	  MPU6050_RawToDeg(&mpu6050, &AmonDrone); // calculate data to pitch and roll (and yaw)
+
+		  	  Reg200HzLoopEN = 0;
+		  }
+		  */
+
+		  if (Reg50HzLoopEN == 1){
+
+			  uint8_t dataRdy = 0;
+			  while(dataRdy == 0){
+				  VL53L1X_CheckForDataReady(&vl53l1Dev, &hi2c3, &dataRdy);
+			  }
+			  dataRdy = 0;
+			  VL53L1X_GetDistance(&vl53l1Dev, &hi2c3, &AmonDrone.Height);
+			  VL53L1X_ClearInterrupt(&vl53l1Dev, &hi2c3);
+
+			  Reg50HzLoopEN = 0;
+		  }
+
+		  if (GyroCalibTrig == 1){
+			  // Print data
+			  char message[50] = {'\0'};
+		  	  //sprintf((char *)message, "Accel X = %.3f , Y = %.3f, Z = %.3f\r\n", mpu6050.ACCEL_X, mpu6050.ACCEL_Y, mpu6050.ACCEL_Z);
+		  	  //sprintf((char *)message, "Gyro X = %.3f , Y = %.3f, Z = %.3f\r\n", mpu6050.GYRO_X, mpu6050.GYRO_Y, mpu6050.GYRO_Z);
+		  	  //sprintf((char *)message, "Pitch = %.3f, Roll = %.3f\r\n", AmonDrone.Pitch, AmonDrone.Roll);
+		  	  sprintf((char *)message, "Height = %dmm\r\n", AmonDrone.Height);
+	  	  	  HAL_UART_Transmit(&huart4, message, strlen((char*)message), 100);
+
+	  	  	  GyroCalibTrig = 0;
+	  	  	  // rgb
+		  }
+	  }
 
 
     /* USER CODE END WHILE */
@@ -255,7 +632,7 @@ static void MX_ADC1_Init(void)
   /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV8;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = ENABLE;
   hadc1.Init.ContinuousConvMode = ENABLE;
@@ -352,7 +729,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -388,12 +765,12 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 0;
+  htim1.Init.Prescaler = 500;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 65535;
+  htim1.Init.Period = 2399;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
-  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
   {
     Error_Handler();
@@ -415,7 +792,7 @@ static void MX_TIM1_Init(void)
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
   sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
@@ -466,11 +843,11 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
+  htim2.Init.Prescaler = 500;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 4294967295;
+  htim2.Init.Period = 2399;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
@@ -492,12 +869,13 @@ static void MX_TIM2_Init(void)
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
   {
     Error_Handler();
@@ -531,7 +909,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 500;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 4799;
+  htim3.Init.Period = 2399;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -626,6 +1004,51 @@ static void MX_TIM4_Init(void)
 }
 
 /**
+  * @brief TIM5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM5_Init(void)
+{
+
+  /* USER CODE BEGIN TIM5_Init 0 */
+
+  /* USER CODE END TIM5_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM5_Init 1 */
+
+  /* USER CODE END TIM5_Init 1 */
+  htim5.Instance = TIM5;
+  htim5.Init.Prescaler = 500;
+  htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim5.Init.Period = 600;
+  htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim5, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim5, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM5_Init 2 */
+
+  /* USER CODE END TIM5_Init 2 */
+
+}
+
+/**
   * @brief UART4 Initialization Function
   * @param None
   * @retval None
@@ -659,6 +1082,26 @@ static void MX_UART4_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA2_CLK_ENABLE();
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Stream2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream2_IRQn);
+  /* DMA2_Stream0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -666,6 +1109,8 @@ static void MX_UART4_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
@@ -709,16 +1154,22 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : RF_IRQ2_Pin */
   GPIO_InitStruct.Pin = RF_IRQ2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(RF_IRQ2_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : RF_IRQ1_Pin */
   GPIO_InitStruct.Pin = RF_IRQ1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(RF_IRQ1_GPIO_Port, &GPIO_InitStruct);
 
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 4, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -728,34 +1179,157 @@ static void MX_GPIO_Init(void)
  */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	HAL_UART_Receive_DMA(&huart4, USART4_GPSRX, 100);
+	HAL_UART_Receive_DMA(&huart4, USART4_GPSRX, 426); // enable USART Receive again
+}
+
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if(GPIO_Pin == RF_IRQ2_Pin)
+    {
+    	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_8);
+    }
+}
+
+
+uint8_t TVCServoEnable()
+{
+	uint8_t status = 0;
+	TVCServoEnableFlag = !TVCServoEnableFlag;
+
+	status += HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+	status += HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+	status += HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
+	status += HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
+
+	return status;
+}
+
+
+uint8_t TVCServoDisable()
+{
+	uint8_t status = 0;
+	EDFEnableFlag = !EDFEnableFlag;
+
+	status += HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
+	status += HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_2);
+	status += HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_3);
+	status += HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_4);
+
+	return status;
+}
+
+
+uint8_t EDFEnable()
+{
+	uint8_t status = 0;
+
+	status += HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
+
+	return status;
+}
+
+
+uint8_t EDFDisable()
+{
+	uint8_t status = 0;
+
+	status += HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_4);
+
+	return status;
+}
+
+
+void StatusLED(uint8_t Status)
+{
+	// OFF: R=2400, G=0, B=0
+	// ON (bright): 500
+	// ON (medium): 1000
+
+	switch(Status){
+	case 0: // STARTUP (red)
+		TIM1->CCR2 = 0; // LED-RGB (blue)
+		TIM1->CCR3 = 0; // LED-RGB (green)
+		TIM2->CCR3 = 2400; // LED-RGB (red)
+		break;
+
+	case 1: // IDLE - no RF connection (blue)
+		TIM1->CCR2 = 1000; // LED-RGB (blue)
+		TIM1->CCR3 = 0; // LED-RGB (green)
+		TIM2->CCR3 = 0; // LED-RGB (red)
+		break;
+
+	case 2: // IDLE - RF connected (green)
+		TIM1->CCR2 = 0; // LED-RGB (blue)
+		TIM1->CCR3 = 500; // LED-RGB (green)
+		TIM2->CCR3 = 0; // LED-RGB (red)
+		break;
+
+	case 3: // ERROR (red + brd led on)
+		TIM1->CCR2 = 0; // LED-RGB (blue)
+		TIM1->CCR3 = 0; // LED-RGB (green)
+		TIM2->CCR3 = 1000; // LED-RGB (red)
+		break;
+
+	case 4: // ARM (all - pink)
+		TIM1->CCR2 = 100; // LED-RGB (blue)
+		TIM1->CCR3 = 100; // LED-RGB (green)
+		TIM2->CCR3 = 100; // LED-RGB (red)
+		break;
+
+	case 5: // FLY ()
+		TIM1->CCR2 = 500; // LED-RGB (blue)
+		TIM1->CCR3 = 500; // LED-RGB (green)
+		TIM2->CCR3 = 0; // LED-RGB (red)
+		break;
+
+	case 6: // FLY OVER (green)
+		TIM1->CCR2 = 0; // LED-RGB (blue)
+		TIM1->CCR3 = 500; // LED-RGB (green)
+		TIM2->CCR3 = 0; // LED-RGB (red)
+		break;
+
+	case 7: // FLY OVER (green)
+		TIM1->CCR2 = RGB_Blue; // LED-RGB (blue)
+		TIM1->CCR3 = RGB_Green; // LED-RGB (green)
+		TIM2->CCR3 = RGB_Red; // LED-RGB (red)
+		break;
+
+	default: // DEFAULT STATE
+		TIM1->CCR2 = 500; // LED-RGB (blue)
+		TIM1->CCR3 = 500; // LED-RGB (green)
+		TIM2->CCR3 = 500; // LED-RGB (red)
+		break;
+	}
 }
 
 
 /*
- * Reading voltage of main board battery, returned value with two decimals
+ * Reading voltage of main board battery
  */
 uint16_t ADC_Read_Main_Battery()
 {
-	HAL_ADC_Start(&hadc1);
-	HAL_ADC_PollForConversion(&hadc1, 100);
-	uint16_t adcVal = HAL_ADC_GetValue(&hadc1);
+	uint16_t adcVal = ADC_BAT_Val[1];
+
 	float temp = ((float)adcVal * 3.3) / 4095;
+
 	float voltage = (((100000+10000)/10000) * temp);
+
 	return (uint16_t)(voltage*100);
 }
 
 
 /*
- * Reading voltage of main board battery, returned value with two decimals
+ * Reading voltage of EDF battery
  */
 uint16_t ADC_Read_EDF_Battery()
 {
-	HAL_ADC_Start(&hadc1);
-	HAL_ADC_PollForConversion(&hadc1, 100);
-	uint16_t adcVal = HAL_ADC_GetValue(&hadc1);
+	uint16_t adcVal = ADC_BAT_Val[0];
+
 	float temp = ((float)adcVal * 3.3) / 4095;
+
 	float voltage = (((100000+10000)/10000) * temp);
+
 	return (uint16_t)(voltage*100);
 }
 
@@ -771,30 +1345,134 @@ uint16_t ADC_Read_EDF_Battery()
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 
-	if (DroneStatus != STATUS_STARTUP && DroneStatus != STATUS_ERROR)
-	{
-		if (LED_blink_cnt_ON < 50) // LED OFF
+	/* TIMER 4 - 50Hz */
+
+	if (htim->Instance == TIM4){
+
+		Reg50HzLoopEN = 1;
+		// Idle - single blink
+		if (DroneStatusLocal != STATUS_STARTUP && DroneStatusLocal != STATUS_ERROR && DroneStatusLocal != STATUS_FLY && GYRO_CALIB == 0)
 		{
-			LED_blink_cnt_ON++;
-		}
-		else
-		{
-			if (LED_blink_cnt_OFF < 10) // LED ON for short time
+			if (LED_blink_cnt_ON < 50) // LED OFF
 			{
-				if (LED_blink_cnt_OFF == 0) // check LED state and not set if is already set
-				{
-					//HAL_GPIO_ReadPin(LED_Red_GPIO_Port, LED_Red_Pin) != 1
-					HAL_GPIO_WritePin(LED_White_GPIO_Port, LED_White_Pin, GPIO_PIN_SET);
-				}
-				LED_blink_cnt_OFF++;
+				LED_blink_cnt_ON++;
 			}
 			else
 			{
-				HAL_GPIO_WritePin(LED_White_GPIO_Port, LED_White_Pin, GPIO_PIN_RESET);
-				LED_blink_cnt_OFF = 0;
-				LED_blink_cnt_ON = 0;
+				if (LED_blink_cnt_OFF < 10) // LED ON for short time
+				{
+					if (LED_blink_cnt_OFF == 0)
+					{
+						HAL_GPIO_WritePin(LED_White_GPIO_Port, LED_White_Pin, GPIO_PIN_SET);
+					}
+					LED_blink_cnt_OFF++;
+				}
+				else
+				{
+					HAL_GPIO_WritePin(LED_White_GPIO_Port, LED_White_Pin, GPIO_PIN_RESET);
+					LED_blink_cnt_OFF = 0;
+					LED_blink_cnt_ON = 0;
+				}
 			}
 		}
+
+		// Fly - dual blink
+		if (DroneStatusLocal != STATUS_STARTUP && DroneStatusLocal != STATUS_ERROR && DroneStatusLocal == STATUS_FLY && GYRO_CALIB == 0)
+		{
+			if (LED_blink_cnt_ON < 50) // LED OFF
+			{
+				LED_blink_cnt_ON++;
+			}
+			else
+			{
+				if (LED_blink_cnt_OFF < 10) // LED ON for short time
+				{
+					if (LED_blink_cnt_OFF <3)
+					{
+						HAL_GPIO_WritePin(LED_White_GPIO_Port, LED_White_Pin, GPIO_PIN_SET);
+					}
+
+					if (LED_blink_cnt_OFF >=3 && LED_blink_cnt_OFF <7)
+					{
+						HAL_GPIO_WritePin(LED_White_GPIO_Port, LED_White_Pin, GPIO_PIN_RESET);
+					}
+
+					if (LED_blink_cnt_OFF >=7)
+					{
+						HAL_GPIO_WritePin(LED_White_GPIO_Port, LED_White_Pin, GPIO_PIN_SET);
+					}
+
+					LED_blink_cnt_OFF++;
+				}
+				else
+				{
+					HAL_GPIO_WritePin(LED_White_GPIO_Port, LED_White_Pin, GPIO_PIN_RESET);
+					LED_blink_cnt_OFF = 0;
+					LED_blink_cnt_ON = 0;
+				}
+			}
+		}
+
+		/* GYRO Calibration */
+
+		if (GyroCalibTrig == 0 && GYRO_CALIB == 1)
+		{
+			if (LED_blink_cnt_ON >= 5)
+			{
+				LED_blink_cnt_ON = 0;
+				GyroCalibTrig = 1;
+			}
+
+			LED_blink_cnt_ON++;
+		}
+	}
+
+	/* TIMER 5 - 200Hz */
+
+	if (htim->Instance == TIM5)
+	{
+		Reg200HzLoopEN = 1;
+
+		/* RGB Cycling */
+		// Red
+		if (RGB_RedMax == 0)
+		{
+			RGB_Red += 1;
+			if (RGB_Red == 1000) RGB_RedMax = 1;
+		}
+
+		if (RGB_RedMax == 1)
+		{
+			RGB_Red -= 1;
+			if (RGB_Red == 0) RGB_RedMax = 0;
+		}
+
+		// Green
+		if (RGB_GreenMax == 0 || (RGB_Green == 300 && RGB_GreenMax == 0 ))
+		{
+			RGB_Green += 1;
+			if (RGB_Green == 900) RGB_GreenMax = 1;
+		}
+
+		if (RGB_GreenMax == 1)
+		{
+			RGB_Green -= 1;
+			if (RGB_Green == 0) RGB_GreenMax = 0;
+		}
+
+		// Blue
+		if (RGB_BlueMax == 0 || (RGB_Blue == 600 && RGB_BlueMax == 0 ))
+		{
+			RGB_Blue += 1;
+			if (RGB_Blue == 900) RGB_BlueMax = 1;
+		}
+
+		if (RGB_BlueMax == 1)
+		{
+			RGB_Blue -= 1;
+			if (RGB_Blue == 0) RGB_BlueMax = 0;
+		}
+
 	}
 }
 

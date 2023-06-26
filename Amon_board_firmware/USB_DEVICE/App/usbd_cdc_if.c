@@ -221,11 +221,11 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
   /* 6      | bDataBits  |   1   | Number Data bits (5, 6, 7, 8 or 16).          */
   /*******************************************************************************/
     case CDC_SET_LINE_CODING:
-    	memcpy(lineCoding, pbuf, sizeof(lineCoding));
+    	  memcpy(lineCoding, pbuf, sizeof(lineCoding));
     break;
 
     case CDC_GET_LINE_CODING:
-    	memcpy(pbuf, lineCoding, sizeof(lineCoding));
+    	  memcpy(pbuf, lineCoding, sizeof(lineCoding));
     break;
 
     case CDC_SET_CONTROL_LINE_STATE:

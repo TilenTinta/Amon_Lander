@@ -33,6 +33,13 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 #include "MPU6050.h"
 #include "BME280.h"
+#include "PWM.h"
+#include "GPS.h"
+#include "DroneData.h"
+
+#include "VL53L1X_api.h"
+#include "VL53L1X_calibration.h"
+//#include "Lidar_core\inc\vl53l1_api.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -62,8 +69,8 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define EDF_BAT_Pin GPIO_PIN_0
 #define EDF_BAT_GPIO_Port GPIOA
-#define BRDD_BAT_Pin GPIO_PIN_1
-#define BRDD_BAT_GPIO_Port GPIOA
+#define BRD_BAT_Pin GPIO_PIN_1
+#define BRD_BAT_GPIO_Port GPIOA
 #define TIM2_CH3_RGB_B_Pin GPIO_PIN_2
 #define TIM2_CH3_RGB_B_GPIO_Port GPIOA
 #define LED_Brd_Pin GPIO_PIN_3
@@ -104,19 +111,14 @@ void Error_Handler(void);
 #define EN_RF2_GPIO_Port GPIOB
 #define RF_IRQ1_Pin GPIO_PIN_7
 #define RF_IRQ1_GPIO_Port GPIOB
+#define RF_IRQ1_EXTI_IRQn EXTI9_5_IRQn
 #define EN_RF1_Pin GPIO_PIN_8
 #define EN_RF1_GPIO_Port GPIOB
 #define CS_RF1_Pin GPIO_PIN_9
 #define CS_RF1_GPIO_Port GPIOB
+
 /* USER CODE BEGIN Private defines */
 
-// Connect values with status codes for RF
-#define STATUS_STARTUP		0
-#define STATUS_IDLE			1
-#define STATUS_ERROR		2
-#define STATUS_ARM			3
-#define STATUS_FLY			4
-#define STATUS_FLY_OVER		5
 
 /* USER CODE END Private defines */
 

@@ -1,0 +1,14 @@
+BME280.c:30:9:BME280_ReadDeviceID	3
+BME280.c:55:9:BME280_Reset	2
+BME280.c:100:9:BME280_Init	4
+BME280.c:138:9:BME280_ReadCalibData	3
+BME280.c:184:9:BME280_ReadTemperature	2
+BME280.c:211:9:BME280_TemperatureCompesation	1
+BME280.c:225:9:BME280_ReadPressure	2
+BME280.c:253:10:BME280_PressureCompesation	2
+BME280.c:277:9:BME280_ReadHumidity	2
+BME280.c:304:10:BME280_HumidityCompesation	1
+BME280.c:316:9:BME280_ReadAllData	2
+BME280.c:363:19:BME280_ReadRegister	1
+BME280.c:367:19:BME280_ReadRegisters	1
+BME280.c:371:19:BME280_WriteRegister	1

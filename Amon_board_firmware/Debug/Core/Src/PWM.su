@@ -1,0 +1,3 @@
+../Core/Src/PWM.c:13:6:DegresToCCR	32	static
+../Core/Src/PWM.c:27:6:SetPWMValue	16	static
+../Core/Src/PWM.c:56:6:PowerToPWMValue	24	static

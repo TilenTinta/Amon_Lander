@@ -20,7 +20,7 @@
  */
 
 #define ID_REG				0xD0		/* page 27 ; SDO -> GND: 0x76; SDO -> VDD: 0x77 (used 0x76) */
-#define DEVICE_ID 			(0x76 << 1)	/* page 27 ; device ID (LSL -> 7bit addres) */
+#define BME280_ID 			(0x76 << 1)	/* page 27 ; device ID (LSL -> 7bit addres) */
 #define RESET				0xE0		/* page 27 ; for reset write value 0xB6, returns 0x00 */
 #define RESET_VAL			0xB6
 
@@ -118,18 +118,10 @@ typedef struct {
 
 } BME280;
 
+
 /*
  * FUNCTIONS
  */
-
-// LL read one register
-HAL_StatusTypeDef BME280_ReadRegister(BME280 *dev, uint8_t reg, uint8_t *data);
-
-// LL read multiple registers
-HAL_StatusTypeDef BME280_ReadRegisters(BME280 *dev, uint8_t reg, uint8_t *data, uint8_t lenght);
-
-// LL write one register
-HAL_StatusTypeDef BME280_WriteRegister(BME280 *dev, uint8_t reg, uint8_t data);
 
 // Read device ID register
 uint8_t BME280_ReadDeviceID(BME280 *dev, I2C_HandleTypeDef *i2cHandle);
@@ -143,23 +135,14 @@ uint8_t BME280_ReadCalibData(BME280 *dev, I2C_HandleTypeDef *i2cHandle);
 // Read temperature
 uint8_t BME280_ReadTemperature(BME280 *dev, I2C_HandleTypeDef *i2cHandle);
 
-// Temperature compensation
-int32_t BME280_TemperatureCompesation(BME280 *dev, int32_t RawTemp);
-
 // Read humidity
 uint8_t BME280_ReadHumidity(BME280 *dev, I2C_HandleTypeDef *i2cHandle);
-
-// Humidity compesation
-uint32_t BME280_HumidityCompesation(BME280 *dev, int32_t RawHum);
 
 // Read pressure
 uint8_t BME280_ReadPressure(BME280 *dev, I2C_HandleTypeDef *i2cHandle);
 
-// Pressure compensation
-uint32_t BME280_PressureCompesation(BME280 *dev, int32_t RawPress);
-
 // Read all measurements
-uint8_t BME280_DataAll(BME280 *dev, I2C_HandleTypeDef *i2cHandle);
+uint8_t BME280_ReadAllData(BME280 *dev, I2C_HandleTypeDef *i2cHandle);
 
 // Reset device
 uint8_t BME280_Reset(BME280 *dev, I2C_HandleTypeDef *i2cHandle);

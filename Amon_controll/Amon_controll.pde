@@ -1007,7 +1007,7 @@ class MenuWindow extends PApplet {
     
     // check serial
     ports = Serial.list();
-    if (ports > 0){
+    if (ports.length > 0){
       println("Available COM ports found!");
     }else{
         println("No available COM ports found!");

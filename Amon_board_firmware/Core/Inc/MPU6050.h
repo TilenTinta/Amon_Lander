@@ -9,6 +9,8 @@
 #define MPU6050_H_
 
 #include "stm32f4xx_hal.h"					/* For i2c communication */
+#include "math.h"
+#include "DroneData.h"
 
 /*
  *		REGISTER MAP
@@ -21,7 +23,7 @@
 
 #define SMPRT_DIV					0x19	/* page 11 - 12 */
 
-#define CONFIG_MPU6050						0x1A	/* page 13 ; FSYNC -> GND (unused), */
+#define CONFIG_MPU6050				0x1A	/* page 13 ; FSYNC -> GND (unused), */
 #define GYRO_CONFIG					0x1B	/* page 14 ; FS_SEL set to 250dps for self-test */
 #define ACCEL_CONFIG				0x1C	/* page 15 ; ASF_SEL set to 8g for self-test */
 
@@ -99,7 +101,7 @@
 #define USER_CTRL					0x6A	/* page 38 ; unused, master control */
 #define PWR_MGMT_1					0x6B	/* page 40 ; clock, mode... */
 #define PWR_MGMT_2					0x6C
-#define FIFO_COUNT_H				0x72	/* page 43 ; number of bztes in fifo buffer */
+#define FIFO_COUNT_H				0x72	/* page 43 ; number of bytes in fifo buffer */
 #define FIFO_COUNT_L				0x73
 #define FIFO_R_W					0x74	/* page 44 ; FIFO buffer */
 
@@ -127,26 +129,83 @@ typedef struct {
 
 	float GYRO_Z;	/* gyroscope z value */
 
-	float Temp_C;	/* gyroscope x value */
+	int16_t Temp_C;	/* gyroscope x value */
+
+	float FT_XG;  /* Factory trim for X gyro */
+
+	float FT_YG;	/* Factory trim for Y gyro */
+
+	float FT_ZG;	/* Factory trim for Z gyro */
+
+	float FT_XA;  /* Factory trim for X accel */
+
+	float FT_YA;	/* Factory trim for Y accel */
+
+	float FT_ZA;  /* Factory trim for Z accel */
 
 } MPU6050;
+
+
+/*
+ * 		Aditional data
+ */
+
+/* Must be calibrated per sensor */
+// On AMON board is sensor oriented in the way that "Z+ points out of the board/craft and X+ points down"
+#define X_ACCEL_OFFSET 				-0.03	// Offset value for acceleration correction
+#define Y_ACCEL_OFFSET 				0.00	// Offset value for acceleration correction
+#define Z_ACCEL_OFFSET 				0.00	// Offset value for acceleration correction
+
+#define ALPHA						0.98	// Alpha value for complementary filter
 
 
 /*
  *		FUNCTIONS
  */
 
-// LL read one register
-HAL_StatusTypeDef MPU6050_ReadRegister(MPU6050 *dev, uint8_t reg, uint8_t *data);
+// Reset device
+uint8_t MPU6050_Reset(MPU6050 *dev, I2C_HandleTypeDef *i2cHandle);
 
-// LL read multiple register
-HAL_StatusTypeDef MPU6050_ReadRegisters(MPU6050 *dev, uint8_t reg, uint8_t *data, uint8_t lenght);
+// Read and calculate factory trim data
+uint8_t MPU6050_ReadFactoryTrim(MPU6050 *dev, I2C_HandleTypeDef *i2cHandle);
 
-// LL write one register
-HAL_StatusTypeDef MPU6050_WriteRegister(MPU6050 *dev, uint8_t reg, uint8_t *data);
+// Initialize device
+uint8_t MPU6050_Init(MPU6050 *dev, I2C_HandleTypeDef *i2cHandle);
+
+// Self test
+uint8_t MPU6050_SelfTest(MPU6050 *dev, I2C_HandleTypeDef *i2cHandle);
+
+// Read Temperature direct (no FIFO)
+uint8_t MPU6050_ReadTemperatureDirect(MPU6050 *dev, I2C_HandleTypeDef *i2cHandle);
+
+// Read gyroscope X data direct (no FIFO)
+uint8_t MPU6050_ReadGyroXDirect(MPU6050 *dev, I2C_HandleTypeDef *i2cHandle);
+
+// Read gyroscope Y data direct (no FIFO)
+uint8_t MPU6050_ReadGyroYDirect(MPU6050 *dev, I2C_HandleTypeDef *i2cHandle);
+
+// Read gyroscope Z data direct (no FIFO)
+uint8_t MPU6050_ReadGyroZDirect(MPU6050 *dev, I2C_HandleTypeDef *i2cHandle);
+
+// Read accelerometer X data direct (no FIFO)
+uint8_t MPU6050_ReadAccelXDirect(MPU6050 *dev, I2C_HandleTypeDef *i2cHandle);
+
+// Read accelerometer Y data direct (no FIFO)
+uint8_t MPU6050_ReadAccelYDirect(MPU6050 *dev, I2C_HandleTypeDef *i2cHandle);
+
+// Read accelerometer Z data direct (no FIFO)
+uint8_t MPU6050_ReadAccelZDirect(MPU6050 *dev, I2C_HandleTypeDef *i2cHandle);
+
+// Read all data direct from registers
+uint8_t MPU6050_ReadAllDirect(MPU6050 *dev, I2C_HandleTypeDef *i2cHandle);
+
+// Read data in FIFO registers
+uint8_t MPU6050_ReadFIFO(MPU6050 *dev, I2C_HandleTypeDef *i2cHandle);
+
+// Convert raw data to degres and complementary filter for gyro data
+void MPU6050_RawToDeg(MPU6050 *dev, AMON_Drone *drone);
 
 // Read device ID register
 uint8_t MPU6050_ReadDeviceID(MPU6050 *dev, I2C_HandleTypeDef *i2cHandle);
-
 
 #endif /* MPU6050_MPU6050_H_ */

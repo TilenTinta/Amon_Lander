@@ -11,12 +11,17 @@ RM := rm -rf
 -include sources.mk
 -include USB_DEVICE/Target/subdir.mk
 -include USB_DEVICE/App/subdir.mk
+-include Middlewares/Third_Party/FatFs/src/option/subdir.mk
+-include Middlewares/Third_Party/FatFs/src/subdir.mk
 -include Middlewares/ST/STM32_USB_Device_Library/Core/Src/subdir.mk
 -include Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/subdir.mk
+-include FATFS/Target/subdir.mk
+-include FATFS/App/subdir.mk
+-include Drivers/vl53l1x/platform/subdir.mk
+-include Drivers/vl53l1x/core/subdir.mk
 -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
--include Components/Servo/subdir.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -81,7 +86,7 @@ main-build: Amon_board_firmware.elf secondary-outputs
 
 # Tool invocations
 Amon_board_firmware.elf Amon_board_firmware.map: $(OBJS) $(USER_OBJS) C:\DATA\Projects\Amon_Lander\Amon_board_firmware\STM32F405RGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-g++ -o "Amon_board_firmware.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\DATA\Projects\Amon_Lander\Amon_board_firmware\STM32F405RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Amon_board_firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+	arm-none-eabi-g++ -o "Amon_board_firmware.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\DATA\Projects\Amon_Lander\Amon_board_firmware\STM32F405RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Amon_board_firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
