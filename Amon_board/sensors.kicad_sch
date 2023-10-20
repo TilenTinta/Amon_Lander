@@ -3080,8 +3080,8 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 436d1e94-dada-4776-8705-dff5f126af1d)
   )
-  (text "AD0 -> GND (2:1): 0x68 (1101000)*\nAD0 -> VDD (2:3): 0x69 (1101001)\n*: used in software"
-    (at 120.65 77.47 0)
+  (text "AD0 -> GND (2:1): 0x3C\nAD0 -> VDD (2:3): 0x3D\n*: used in software"
+    (at 120.65 78.74 0)
     (effects (font (size 0.9 0.9)) (justify left bottom))
     (uuid 47a341ad-e198-4c97-bd3c-81419f96a56d)
   )
@@ -3183,8 +3183,8 @@
     (effects (font (size 2 2) (thickness 0.4) bold italic) (justify left bottom))
     (uuid d8279037-5dd9-4a2a-9fb9-0688d4de98cd)
   )
-  (text "SDO -> GND (2:1): 0x76*\nSDO -> VDD (2:3): 0x77\n*: used in software"
-    (at 171.45 60.96 0)
+  (text "SDO -> GND (2:1): 0x60* (0b0110 0000)\nSDO -> VDD (2:3): 0x61  (0b0110 0001)\n*: used in software"
+    (at 168.91 60.96 0)
     (effects (font (size 0.9 0.9)) (justify left bottom))
     (uuid d8394335-6710-4cdb-be52-1c085d7f4567)
   )

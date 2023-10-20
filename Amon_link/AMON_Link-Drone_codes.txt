@@ -1,6 +1,21 @@
 AMON Link - Drone codes
 Code ID:
 00 - NULL
+/* DroneStatus */
+#define STATUS_STARTUP		0
+#define STATUS_IDLE_NC		1 // not connected
+#define STATUS_IDLE_CN		2 // connected
+#define STATUS_ERROR		3
+#define STATUS_ARM			4
+#define STATUS_FLY			5
+#define STATUS_FLY_OVER		6
+
+#define RF_STATUS_CN		1
+#define RF_STATUS_NC		
+
+
+Payload 0-32 byte
+
 01 - Link setup
 02 - Link error
 03 - Pair
@@ -12,16 +27,3 @@ Code ID:
 20 - Amon arm
 21 - Amon fly data
 30 - Amon land
-
-
-/* DroneStatus */
-#define STATUS_STARTUP		0
-#define STATUS_IDLE_NC		1 // not connected
-#define STATUS_IDLE_CN		2 // connected
-#define STATUS_ERROR		3
-#define STATUS_ARM			4
-#define STATUS_FLY			5
-#define STATUS_FLY_OVER		6
-
-#define RF_STATUS_CN		1
-#define RF_STATUS_NC		0

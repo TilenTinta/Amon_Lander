@@ -54,6 +54,7 @@ TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim5;
+TIM_HandleTypeDef htim6;
 
 UART_HandleTypeDef huart4;
 DMA_HandleTypeDef hdma_uart4_rx;
@@ -75,6 +76,7 @@ static void MX_TIM2_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_TIM5_Init(void);
+static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -96,11 +98,14 @@ uint8_t DroneStatusLocal = 0;
 uint8_t DroneStatusOld = 20;
 uint8_t StartupInit = 0;
 uint8_t InitError = 0;
+
 uint8_t LED_blink_cnt_ON;
 uint8_t LED_blink_cnt_double;
 uint8_t LED_blink_cnt_OFF;
+
 uint8_t TVCServoEnableFlag = 0;
 uint8_t EDFEnableFlag = 0;
+
 uint8_t RF_IRQ1_EN = 0;			// flag to enable irq code
 uint8_t RF_IRQ2_EN = 0;			// flag to enable irq code
 
@@ -118,12 +123,15 @@ uint16_t RGB_GreenMax = 0;
 uint16_t RGB_BlueMax = 0;
 
 // Battery data
+uint8_t ADC_DMA_DataRdy = 0;
 uint32_t ADC_BAT_Val[2] = {};
 
 // GPS data
 uint8_t USART4_GPSRX[426] = {"\0"};
+uint8_t NewGPSData = 0;
 
 // Timers IRQ enable flag
+uint8_t Reg1HzLoopEN = 0;
 uint8_t Reg50HzLoopEN = 0;
 uint8_t Reg200HzLoopEN = 0;
 
@@ -170,14 +178,16 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_TIM5_Init();
   MX_FATFS_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
 
   /* STRUCTS */
-  MPU6050 mpu6050;
-  BME280 bme280;
+  MPU6050 mpu6050; // Temp, Press, Hum
+  BME280 bme280; // Gyro
 
-  AMON_Drone AmonDrone;
+  AMON_Drone AmonDrone; // All drone data
 
+  // Decoded GPS data for each type of packet
   GPS_GGA gps_gga;
   GPS_GLL gps_gll;
   GPS_GSA gps_gsa;
@@ -185,23 +195,18 @@ int main(void)
   GPS_RMC gps_rmc;
   GPS_VTG gps_vtg;
 
-  VL53L1_DEV vl53l1Dev;
-  VL53L1X_Version_t vl53l1xVersion_t;
-  VL53L1X_Result_t vl53l1xResult_t;
+  VL53L1_DEV vl53l1Dev; // Lidar
+  //VL53L1X_Version_t vl53l1xVersion_t; // Lidar - unused
+  //VL53L1X_Result_t vl53l1xResult_t; // Lidar - unused
+
 
   /* Variables */
-
 
 
   // Init
   AmonDrone.DroneStatus = 0;
   AmonDrone.PitchOld = 0;
   AmonDrone.RollOld = 0;
-
-
-
-  /* DMA */
-
 
 
 
@@ -212,19 +217,23 @@ int main(void)
   while (1)
   {
 
-
-	  if (AmonDrone.DroneStatus != DroneStatusOld && GYRO_CALIB == 0)
+	  // Changing values when changing status
+	  if (AmonDrone.DroneStatus != DroneStatusOld && CALIBRATION == 0)
 	  {
 		  DroneStatusOld = AmonDrone.DroneStatus;
 		  DroneStatusLocal = AmonDrone.DroneStatus;
 		  StatusLED(AmonDrone.DroneStatus);
 	  }
 
-	  if (GYRO_CALIB == 1) // RGB cycling
+	  // RGB cycling when calibrating
+	  if (CALIBRATION == 1)
 	  {
 		  AmonDrone.DroneStatus = STATUS_GYRO_CALIB;
 		  DroneStatusLocal = AmonDrone.DroneStatus;
 	  }
+
+
+
 
 	  /****************************
 	   * INIT  SEQUENCE
@@ -268,8 +277,7 @@ int main(void)
 		DegresToCCR(90.0 + SERVO_YP_OFFSET, SERVO_YP);
 		HAL_Delay(500); // wait on motors to stop mooving
 
-		HAL_ADC_Start_DMA(&hadc1, ADC_BAT_Val, 2);
-
+		// Start timers for sensors and LEDs
 		HAL_GPIO_WritePin(LED_Red_GPIO_Port, LED_Red_Pin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(LED_Brd_GPIO_Port, LED_Brd_Pin, GPIO_PIN_RESET);
 		HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2); // RGB (50Hz)
@@ -277,10 +285,18 @@ int main(void)
 		HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3); // RGB (50Hz)
 
 		/* Read both batteries and save in drone data struct */
+		HAL_ADC_Start_DMA(&hadc1, ADC_BAT_Val, 2); 		// Start ADC DMA (read analog value)
+
+		while(ADC_DMA_DataRdy == 0){
+			// white...
+		}
+
 		AmonDrone.MainBatVoltage = ADC_Read_Main_Battery();
 		AmonDrone.EDFBatVoltage = ADC_Read_EDF_Battery();
-		if (AmonDrone.MainBatVoltage < 1000) status++; // check board battery voltage (more than 10V)
-		//if (AmonDrone.EDFBatVoltage < 2000) status++; // check board battery voltage (more than 20V)
+		ADC_DMA_DataRdy = 0;
+
+		if (AmonDrone.MainBatVoltage < 1000) status++; // check board battery voltage (more than XV)
+		//if (AmonDrone.EDFBatVoltage < 2000) status++; // check board battery voltage (more than XV)
 
 		HAL_Delay(500);
 
@@ -290,7 +306,7 @@ int main(void)
 
 		HAL_Delay(500); // delay sensors config to complete power on
 
-		/* MBE280 */
+		/* BME280 */
 		status += BME280_ReadDeviceID(&bme280, &hi2c3);
 		status += BME280_ReadCalibData(&bme280, &hi2c3);
 		status += BME280_Init(&bme280, &hi2c3);
@@ -312,14 +328,15 @@ int main(void)
 		}
 		status += VL53L1X_SensorInit(&vl53l1Dev, &hi2c3);
 		status += VL53L1X_SetTimingBudgetInMs(&vl53l1Dev, &hi2c3, 200); // 140ms is min for 4m distance
-		status += VL53L1X_SetOffset(&vl53l1Dev, &hi2c3, -130);
+		status += VL53L1X_SetOffset(&vl53l1Dev, &hi2c3, -130); // Set height from ground to get zero
 		VL53L1X_StartRanging(&vl53l1Dev, &hi2c3);
 
 
 		HAL_TIM_Base_Start_IT(&htim4); // TVC LOOP, leg leds (50Hz)
 		HAL_TIM_Base_Start_IT(&htim5); // Complementary Filter
 
-		if (GYRO_CALIB == 0) HAL_UART_Receive_DMA(&huart4, USART4_GPSRX, 426); // Do not enable UART DMA if calibrating
+
+		if (CALIBRATION == 0) HAL_UART_Receive_DMA(&huart4, USART4_GPSRX, 426); // Do not enable UART DMA if calibrating
 
 
 		if (bme280.dig_T1 == 0 || bme280.dig_T2 == 0) // for WTF error
@@ -345,31 +362,38 @@ int main(void)
 	  }
 
 
+
+
+
 	  /****************************
 	   * SEQUENCE IDLE, ARM, FLY...
 	   ****************************/
 
-	  if (StartupInit != STATUS_STARTUP && AmonDrone.DroneStatus != STATUS_ERROR && GYRO_CALIB == 0)
+	  if (StartupInit != STATUS_STARTUP && AmonDrone.DroneStatus != STATUS_ERROR && CALIBRATION == 0)
 	  {
 
 		  /*** CURRENT DRONE STATUS ***/
 		  switch(AmonDrone.DroneStatus){
 
-		  case STATUS_IDLE_NC:							/*/ Drone ideling but no connection with link /*/
 
-			  if (TVCServoEnableFlag == 1) TVCServoDisable();
-			  if (EDFEnableFlag == 1) EDFDisable();
+
+		  /*/ Drone ideling but no connection with link /*/
+		  case STATUS_IDLE_NC:
+
+			  if (TVCServoEnableFlag == 1) TVCServoDisable();	// Disable TVC servos
+			  if (EDFEnableFlag == 1) EDFDisable();				// Disable EDF
+
 
 			  if (Reg200HzLoopEN == 1) // Timer 4
 			  {
-				  MPU6050_ReadAllDirect(&mpu6050, &hi2c3);
-				  MPU6050_RawToDeg(&mpu6050, &AmonDrone); // calculate data to pitch and roll (and yaw)
+				  MPU6050_ReadAllDirect(&mpu6050, &hi2c3);	// read data from gyro
+				  MPU6050_RawToDeg(&mpu6050, &AmonDrone); 	// calculate data to pitch and roll (and yaw)
 				  Reg200HzLoopEN = 0;
 			  }
 
+
 			  if (Reg50HzLoopEN == 1)	// Timer 5
 			  {
-
 				  uint8_t dataRdy = 0;
 				  while(dataRdy == 0)
 				  {
@@ -381,12 +405,29 @@ int main(void)
 				  // Read other sensors
 				  Reg50HzLoopEN = 0;
 			  }
+
+
+			  if (Reg1HzLoopEN == 1)	// Timer 6
+			  {
+
+				  Reg1HzLoopEN = 0;
+			  }
+
+
+			  if (NewGPSData == 1 && USE_GPS == 1){	// new gps data available -> decode
+				  GPS_Decode_GGA(&USART4_GPSRX, &gps_gga, &AmonDrone);
+
+				  NewGPSData = 0;
+			  }
+
 			  break;
 
-		  case STATUS_IDLE_CN: 							/*/ Drone ideling and is connected with link /*/
+		  /*/ Drone ideling and is connected with link /*/
+		  case STATUS_IDLE_CN:
 
-			  if (TVCServoEnableFlag == 1) TVCServoDisable();
-			  if (EDFEnableFlag == 1) EDFDisable();
+			  if (TVCServoEnableFlag == 1) TVCServoDisable();	// Disable TVC servos
+			  if (EDFEnableFlag == 1) EDFDisable();				// Disable EDF
+
 
 			  if (Reg200HzLoopEN == 1) // Timer 4
 			  {
@@ -394,6 +435,7 @@ int main(void)
 			  	  MPU6050_RawToDeg(&mpu6050, &AmonDrone); // calculate data to pitch and roll (and yaw)
 			  	  Reg200HzLoopEN = 0;
 			  }
+
 
 			  if (Reg50HzLoopEN == 1)	// Timer 5
 			  {
@@ -408,9 +450,25 @@ int main(void)
 			  	// Read other sensors...
 			  	  Reg50HzLoopEN = 0;
 			  }
+
+
+			  if (Reg1HzLoopEN == 1)	// Timer 6
+			  {
+
+				  Reg1HzLoopEN = 0;
+			  }
+
+
+			  if (NewGPSData == 1 && USE_GPS == 1){	// new gps data available -> decode
+
+
+				  NewGPSData = 0;
+			  }
+
 			  break;
 
-		  case STATUS_ARM:								/*/ Drone is armet to take off /*/
+		  /*/ Drone is armed to take off /*/
+		  case STATUS_ARM:
 
 			  if (TVCServoEnableFlag == 0) TVCServoEnable();
 			  if (EDFEnableFlag == 0) EDFEnable();
@@ -422,12 +480,10 @@ int main(void)
 			  	  Reg200HzLoopEN = 0;
 			  }
 
-			  if (Reg50HzLoopEN == 1 && MeassCnt < 20)	// Timer 5
+			  if (Reg50HzLoopEN == 1)	// Timer 5
 			  {
-				  PitchDef[MeassCnt] = AmonDrone.Pitch;
-				  RollDef[MeassCnt] = AmonDrone.Roll;
-				  MeassCnt++;
 
+				  // Moving average for pitch and roll
 				  if (MeassCnt == 20)
 				  {
 					  float PitchSum = 0;
@@ -441,13 +497,22 @@ int main(void)
 
 					  AmonDrone.PitchMean = PitchSum / 20;
 					  AmonDrone.RollMean = RollSum / 20;
+
+					  MeassCnt = 0; // reset if not used for new data
+				  }
+
+				  if (MeassCnt < 20)
+				  {
+					  PitchDef[MeassCnt] = AmonDrone.Pitch;
+					  RollDef[MeassCnt] = AmonDrone.Roll;
+					  MeassCnt++;
 				  }
 
 
 				  uint8_t dataRdy = 0;
 				  while(dataRdy == 0)
 				  {
-				  	  VL53L1X_CheckForDataReady(&vl53l1Dev, &hi2c3, &dataRdy);
+					  VL53L1X_CheckForDataReady(&vl53l1Dev, &hi2c3, &dataRdy);
 				  }
 				  dataRdy = 0;
 				  VL53L1X_GetDistance(&vl53l1Dev, &hi2c3, &AmonDrone.Height);
@@ -456,11 +521,27 @@ int main(void)
 
 				  Reg50HzLoopEN = 0;
 			  }
+
+
+			  if (Reg1HzLoopEN == 1)	// Timer 6
+			  {
+
+				  Reg1HzLoopEN = 0;
+			  }
+
+
+			  if (NewGPSData == 1 && USE_GPS == 1){	// new gps data available -> decode
+
+
+				  NewGPSData = 0;
+			  }
+
 			  break;
 
-		  case STATUS_FLY:								/*/ Flying /*/
+		  /*/ Flying /*/
+		  case STATUS_FLY:
 
-			  // add init level value
+
 			  DegresToCCR(90.0f + AmonDrone.Pitch + (AmonDrone.PitchMean) + SERVO_XN_OFFSET, SERVO_XN);
 			  DegresToCCR(90.0f - AmonDrone.Pitch + (AmonDrone.PitchMean) + SERVO_XP_OFFSET, SERVO_XP);
 			  DegresToCCR(90.0f - AmonDrone.Roll + (AmonDrone.RollMean) + SERVO_YN_OFFSET, SERVO_YN);
@@ -469,7 +550,8 @@ int main(void)
 
 			  break;
 
-		  case STATUS_FLY_OVER:							/*/ Dron landed (after flying) /*/
+		  /*/ Dron landed (after flying) /*/
+		  case STATUS_FLY_OVER:
 
 			  if (TVCServoEnableFlag == 1) TVCServoDisable();
 			  if (EDFEnableFlag == 1) EDFDisable();
@@ -495,10 +577,25 @@ int main(void)
   				  // save to sd...
   				  Reg50HzLoopEN = 0;
 			  }
+
+
+			  if (Reg1HzLoopEN == 1)	// Timer 6
+			  {
+
+				  Reg1HzLoopEN = 0;
+			  }
+
+
+			  if (NewGPSData == 1 && USE_GPS == 1){	// new gps data available -> decode
+
+
+				  NewGPSData = 0;
+			  }
 			  break;
 
+		  /*/ Wrong state /*/
 		  default:
-			  AmonDrone.DroneStatus = STATUS_ERROR;		/*/ Wrong state /*/
+			  AmonDrone.DroneStatus = STATUS_ERROR;
 			  TVCServoDisable();
 			  EDFDisable();
 			  break;
@@ -509,7 +606,7 @@ int main(void)
 	  /* ********* GYROSCOPE Calibration *********
 	   * Before using gyroscope is necessary to set right offset values for all three accelerometers.
 	   * This is set in MPU6050.h file (#define X_ACCEL_OFFSET, X_ACCEL_OFFSET, X_ACCEL_OFFSET)
-	   * To get these values change GYRO_CALIB value to 1 and reupload code on board
+	   * To get these values change CALIBRATION value to 1 and reupload code on board
 	   * Disconnect everything from the board and unmount it from drone.
 	   * On GPS port connect FTDI module to read UART communication. DO NOT CONNECT POWER PIN (3.3V) IF YOU ARE PLANNING TO POWER THE BOARD FROM BATTERY !!!
 	   * Open serial port on PC and connect to FTDI. After initialization the dron will start to read data from gyroscope and send it over UART.
@@ -518,20 +615,20 @@ int main(void)
 	   * Change GYRO_CALIB back to 0, reupload code and mount board bact to drone
 	   */
 
-	  if (GYRO_CALIB == 1 )
+	  if (CALIBRATION == 1 )
 	  {
 		  StatusLED(AmonDrone.DroneStatus);
-		  /*
-		  if (Reg200HzLoopEN == 1){
+
+		  if (Reg200HzLoopEN == 1 && (CAL_GYRO_X == 1 || CAL_GYRO_Y == 1 || CAL_GYRO_Z == 1 || CAL_ACCEL_X == 1 || CAL_ACCEL_Y == 1 || CAL_ACCEL_Z == 1)){
 
 			  MPU6050_ReadAllDirect(&mpu6050, &hi2c3); // Read all raw data from sensor
 		  	  MPU6050_RawToDeg(&mpu6050, &AmonDrone); // calculate data to pitch and roll (and yaw)
 
 		  	  Reg200HzLoopEN = 0;
 		  }
-		  */
 
-		  if (Reg50HzLoopEN == 1){
+
+		  if (Reg50HzLoopEN == 1 && CAL_LIDAR == 1){
 
 			  uint8_t dataRdy = 0;
 			  while(dataRdy == 0){
@@ -545,16 +642,26 @@ int main(void)
 		  }
 
 		  if (GyroCalibTrig == 1){
+
 			  // Print data
 			  char message[50] = {'\0'};
-		  	  //sprintf((char *)message, "Accel X = %.3f , Y = %.3f, Z = %.3f\r\n", mpu6050.ACCEL_X, mpu6050.ACCEL_Y, mpu6050.ACCEL_Z);
-		  	  //sprintf((char *)message, "Gyro X = %.3f , Y = %.3f, Z = %.3f\r\n", mpu6050.GYRO_X, mpu6050.GYRO_Y, mpu6050.GYRO_Z);
-		  	  //sprintf((char *)message, "Pitch = %.3f, Roll = %.3f\r\n", AmonDrone.Pitch, AmonDrone.Roll);
-		  	  sprintf((char *)message, "Height = %dmm\r\n", AmonDrone.Height);
-	  	  	  HAL_UART_Transmit(&huart4, message, strlen((char*)message), 100);
+
+			  if (CAL_ACCEL_X == 1 || CAL_ACCEL_Y == 1 || CAL_ACCEL_Z == 1) sprintf((char *)message, "Accel X = %.3f , Y = %.3f, Z = %.3f\r\n", mpu6050.ACCEL_X, mpu6050.ACCEL_Y, mpu6050.ACCEL_Z);
+
+			  if (CAL_GYRO_X == 1 || CAL_GYRO_Y == 1 || CAL_GYRO_Z == 1) sprintf((char *)message, "Gyro X = %.3f , Y = %.3f, Z = %.3f\r\n", mpu6050.GYRO_X, mpu6050.GYRO_Y, mpu6050.GYRO_Z);
+
+		  	  if (CAL_PITCH == 1 && CAL_ROLL == 1) sprintf((char *)message, "Pitch = %.3f, Roll = %.3f\r\n", AmonDrone.Pitch, AmonDrone.Roll);
+
+		  	  if (CAL_ROLL == 1) sprintf((char *)message, "Roll = %.3f\r\n", AmonDrone.Roll);
+
+		  	  if (CAL_PITCH == 1) sprintf((char *)message, "Pitch = %.3f\r\n", AmonDrone.Pitch);
+
+		  	  if (CAL_LIDAR == 1) sprintf((char *)message, "Height = %dmm\r\n", AmonDrone.Height);
+
+	  	  	  HAL_UART_Transmit(&huart4, (uint8_t*)message, strlen((char*)message), 100);
 
 	  	  	  GyroCalibTrig = 0;
-	  	  	  // rgb
+
 		  }
 	  }
 
@@ -1049,6 +1156,44 @@ static void MX_TIM5_Init(void)
 }
 
 /**
+  * @brief TIM6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM6_Init(void)
+{
+
+  /* USER CODE BEGIN TIM6_Init 0 */
+
+  /* USER CODE END TIM6_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM6_Init 1 */
+
+  /* USER CODE END TIM6_Init 1 */
+  htim6.Instance = TIM6;
+  htim6.Init.Prescaler = 10000;
+  htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim6.Init.Period = 6000;
+  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM6_Init 2 */
+
+  /* USER CODE END TIM6_Init 2 */
+
+}
+
+/**
   * @brief UART4 Initialization Function
   * @param None
   * @retval None
@@ -1180,6 +1325,7 @@ static void MX_GPIO_Init(void)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	HAL_UART_Receive_DMA(&huart4, USART4_GPSRX, 426); // enable USART Receive again
+	NewGPSData = 1;		// set flag that new data has arrived
 }
 
 
@@ -1191,7 +1337,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     }
 }
 
-
+/*
+ * Enabling servos for TVC stabilization
+ */
 uint8_t TVCServoEnable()
 {
 	uint8_t status = 0;
@@ -1205,7 +1353,9 @@ uint8_t TVCServoEnable()
 	return status;
 }
 
-
+/*
+ * Disabling servos for TVC stabilization
+ */
 uint8_t TVCServoDisable()
 {
 	uint8_t status = 0;
@@ -1219,7 +1369,9 @@ uint8_t TVCServoDisable()
 	return status;
 }
 
-
+/*
+ * Enabling EDF
+ */
 uint8_t EDFEnable()
 {
 	uint8_t status = 0;
@@ -1229,7 +1381,9 @@ uint8_t EDFEnable()
 	return status;
 }
 
-
+/*
+ * Disabling EDF
+ */
 uint8_t EDFDisable()
 {
 	uint8_t status = 0;
@@ -1334,6 +1488,14 @@ uint16_t ADC_Read_EDF_Battery()
 }
 
 
+/*
+ * DMA data from ADC ready
+ */
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
+	ADC_DMA_DataRdy = 1;
+}
+
+
 /* Regulator loop interrupt - 50Hz
  * 	- Read sensors
  * 	- Calculate TVC
@@ -1351,7 +1513,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 		Reg50HzLoopEN = 1;
 		// Idle - single blink
-		if (DroneStatusLocal != STATUS_STARTUP && DroneStatusLocal != STATUS_ERROR && DroneStatusLocal != STATUS_FLY && GYRO_CALIB == 0)
+		if (DroneStatusLocal != STATUS_STARTUP && DroneStatusLocal != STATUS_ERROR && DroneStatusLocal != STATUS_FLY && CALIBRATION == 0)
 		{
 			if (LED_blink_cnt_ON < 50) // LED OFF
 			{
@@ -1376,8 +1538,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			}
 		}
 
+
 		// Fly - dual blink
-		if (DroneStatusLocal != STATUS_STARTUP && DroneStatusLocal != STATUS_ERROR && DroneStatusLocal == STATUS_FLY && GYRO_CALIB == 0)
+		if (DroneStatusLocal != STATUS_STARTUP && DroneStatusLocal != STATUS_ERROR && DroneStatusLocal == STATUS_FLY && CALIBRATION == 0)
 		{
 			if (LED_blink_cnt_ON < 50) // LED OFF
 			{
@@ -1413,9 +1576,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			}
 		}
 
+
 		/* GYRO Calibration */
 
-		if (GyroCalibTrig == 0 && GYRO_CALIB == 1)
+		if (GyroCalibTrig == 0 && CALIBRATION == 1)
 		{
 			if (LED_blink_cnt_ON >= 5)
 			{
@@ -1426,6 +1590,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			LED_blink_cnt_ON++;
 		}
 	}
+
 
 	/* TIMER 5 - 200Hz */
 
@@ -1473,6 +1638,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			if (RGB_Blue == 0) RGB_BlueMax = 0;
 		}
 
+	}
+
+	/* TIMER 6 - 1Hz */
+	if (htim->Instance == TIM6){
+		Reg1HzLoopEN = 1;
 	}
 }
 

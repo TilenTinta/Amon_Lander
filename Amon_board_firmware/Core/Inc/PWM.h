@@ -18,6 +18,7 @@
  *
  * 	1deg = 0.011ms
  * 	1deg = 33.4 value
+ * 	0.1deg = 3.374 value
  *
  */
 

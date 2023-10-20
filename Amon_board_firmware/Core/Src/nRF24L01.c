@@ -7,7 +7,7 @@
 
 #include "nRF24L01.h"
 
-
+/*
 uint8_t NRF24L01_WriteRegister(SPI_HandleTypeDef *spiHandle, uint8_t radio, uint8_t reg, uint8_t *data){
 
 	if(radio == 1){
@@ -25,4 +25,4 @@ uint8_t NRF24L01_WriteRegister(SPI_HandleTypeDef *spiHandle, uint8_t radio, uint
 	}
 
 }
-
+*/

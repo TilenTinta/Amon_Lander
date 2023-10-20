@@ -57,7 +57,7 @@ typedef struct {
 /* FUNCTIONS */
 
 // Write
-uint8_t NRF24L01_WriteRegister(NRF24L01 *dev, uint8_t radio, uint8_t reg, uint8_t *data);
+//uint8_t NRF24L01_WriteRegister(NRF24L01 *dev, uint8_t radio, uint8_t reg, uint8_t *data);
 
 
 
