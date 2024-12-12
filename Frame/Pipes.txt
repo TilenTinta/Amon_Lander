@@ -1,5 +1,5 @@
-Pipes that are used on drone are plastic pipes for electrical wiring in house. 
+Pipes that are used in drone are plastic pipes for electrical wiring in house. 
 Better option are carbon fiber pipes
 Measurements:
-- pipe: 250mm
-- side pipe: 240mm
+- pipe: 250mm [used in 4 main leg and 4 top pipes -vertical]
+- side pipe: 240mm [leg side connecting pipes]

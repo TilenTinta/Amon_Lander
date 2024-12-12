@@ -1,9 +1,11 @@
 # ignore directories
 .gitignore
 Data/
-Amon_terminal/
 Datasheet/
-Test_stand
 README_for_Me.txt
+
+# Used in future
+Amon_terminal/
+Test_stand
 
 echo .DS_Store >> .gitignore

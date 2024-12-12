@@ -39,7 +39,6 @@ extern "C" {
 
 #include "VL53L1X_api.h"
 #include "VL53L1X_calibration.h"
-//#include "Lidar_core\inc\vl53l1_api.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

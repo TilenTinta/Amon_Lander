@@ -1,0 +1,65 @@
+Id;Designator;Package;Quantity;Designation
+1;JP2;SolderJumper-3_P2.0mm_Open_TrianglePad1.0x1.5mm_NumberLabels;1;I2C address
+2;H2,H1,H4,H3;MountingHole_3.2mm_M3_Pad_Via;4;MountingHole_Pad
+3;R7,R9,R8,R6;R_0603_1608Metric;4;100
+4;C14,C21,C16,C13,C10,C5,C34,C9,C7,C32,C8;C_0603_1608Metric;11;100nF
+5;J4,J5;AMASS_XT60-M;2;XT60-F
+6;J14;PinHeader_1x04_P2.54mm_Vertical;1;Conn_01x04_Male
+7;R25,R24,R26,R27;R_0603_1608Metric;4;1k
+8;R13,R10;R_1206_3216Metric;2;100k
+9;R34,R33,R32,R35;R_0603_1608Metric;4;330
+10;R12,R19;R_0603_1608Metric;2;100k
+11;L1,L2;L_10.4x10.4_H4.8;2;10uH 4A
+12;R22;R_0603_1608Metric;1;44k
+13;R17;R_0603_1608Metric;1;26k1
+14;C25,C27,C28;C_0603_1608Metric;3;0.1uF
+15;D4,D2,D1;D_SMA;3;B120-E3
+16;J7;TerminalBlock_MetzConnect_Type055_RT01502HDWU_1x02_P5.00mm_Horizontal;1;Red leds
+17;U3;SOIC-8_5.23x5.23mm_P1.27mm;1;W25Q128JVS
+18;R1,R2;R_0603_1608Metric;2;5k1
+19;J9,J6;PinSocket_2x04_P2.54mm_Vertical;2;Conn_02x04_Odd_Even
+20;U7;Bosch_LGA-8_2x2.5mm_P0.65mm_ClockwisePinNumbering;1;BME280
+21;J3;TerminalBlock_MetzConnect_Type055_RT01502HDWU_1x02_P5.00mm_Horizontal;1;Switch_port
+22;R3,R29,R30,R21,R28,R31,R16;R_0603_1608Metric;7;10k
+23;M4;PinHeader_1x03_P2.54mm_Vertical;1;Servo_Y-
+24;C15,C20;CP_EIA-3216-10_Kemet-I;2;10uF
+25;J2;IDC-Header_2x05_P2.54mm_Vertical;1;Conn_2x5 pin
+26;R18,R23;R_0603_1608Metric;2;1k5
+27;J8;TerminalBlock_MetzConnect_Type055_RT01502HDWU_1x02_P5.00mm_Horizontal;1;White leds
+28;J11;PinHeader_1x03_P2.54mm_Vertical;1;Conn_01x03_Male
+29;J1;USB_C_Receptacle_XKB_U262-16XN-4BVC11;1;USB2.0_C_Rev
+30;C12,C33,C11;C_0603_1608Metric;3;1uF
+31;JP3;SolderJumper-2_P1.3mm_Open_TrianglePad1.0x1.5mm;1;SolderJumper_2_Open
+32;C2,C1;C_0603_1608Metric;2;14pF
+33;U1;SOT-23-6_Handsoldering;1;USBLC6-2P6
+34;R4,R5;R_0603_1608Metric;2;4k7
+35;J12;JST_XH_S6B-XH-A-1_1x06_P2.50mm_Horizontal;1;Conn_01x06_Male
+36;M2;PinHeader_1x03_P2.54mm_Vertical;1;Servo_X-
+37;C24,C19;C_0603_1608Metric;2;22uF
+38;J10;AMPHENOL_GTFP08131Y2HR;1;GTFP08131Y2HR
+39;SW2;SW_Push_1P1T_NO_CK_KMR2;1;SW_SPST
+40;C3;C_0603_1608Metric;1;4.7uF
+41;U5,U4;SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.62x3.51mm;2;MP2303ADN
+42;FB1;L_1206_3216Metric_Pad1.22x1.90mm_HandSolder;1;100R 100MHz
+43;C31;C_0603_1608Metric;1;10uF
+44;C22,C17;C_0603_1608Metric;2;3.9nF
+45;R20,R14;R_0603_1608Metric;2;6k8
+46;SW1;SW_SPDT_PCM12;1;SW_DPDT
+47;J13;JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal;1;Conn_01x04_Male
+48;Y1;Crystal_SMD_3225-4Pin_3.2x2.5mm;1;25MHz
+49;C30,C26;CP_Elec_4x5.4;2;10uF
+50;D3,D5;LED_0603_1608Metric;2;Red
+51;C18,C23;C_0603_1608Metric;2;10nF
+52;R15,R11;R_1206_3216Metric;2;10k
+53;D7;LED_Cree-PLCC4_3.2x2.8mm_CCW;1;LED_RGBA
+54;Q1,Q2;SOT-23;2;BC817
+55;C4,C6;C_0603_1608Metric;2;2.2uF
+56;U2;LQFP-64_10x10mm_P0.5mm;1;STM32F405RGT6-LQFP64
+57;U6;InvenSense_QFN-24_4x4mm_P0.5mm;1;MPU-6050
+58;M1;PinHeader_1x03_P2.54mm_Vertical;1;Servo_X+
+59;JP1;SolderJumper-2_P1.3mm_Open_Pad1.0x1.5mm;1;SolderJumper_2_Open
+60;M3;PinHeader_1x03_P2.54mm_Vertical;1;Servo_Y+
+61;J15;PinHeader_1x06_P2.54mm_Vertical;1;Conn_01x06_Male
+62;C29;C_0603_1608Metric;1;2.2nF
+63;D6;LED_0603_1608Metric;1;RED
+64;H6,H5;MountingHole_3.2mm_M3;2;MountingHole

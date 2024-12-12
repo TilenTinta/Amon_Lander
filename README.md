@@ -1,5 +1,4 @@
-Amon Lander - PROJECT STILL IN PROGRESS 
-(Working on it in my free time)
+Amon Lander - PROJECT IN PROGRESS 
 
 Is an open source model of lander/hopper inspired by vehicle Sprite created 
 by Joe Barnard from YouTube channel BPS.space.
@@ -15,3 +14,5 @@ The plan was/is to create craft similar to Sprite that uses EDF fan to hover, fo
 servos and fins to stabilize itself (TVC), sensors to monitor all the parameters, 
 custom PCB to do all computation and communications with computer on the grond. 
 Everything will be monitored and controlled from an app.
+
+The main idea of these project is to learn as much as possible about electroniks, 3D moddeling, coding (embedded and programs for PC), documentation reading, flight mechanics, regulators... and have as much fun as possible ;) A lot of things can be done easier, faster and with less complications but as said the idea behind the project is to learn new stuff

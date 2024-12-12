@@ -1,1 +1,0 @@
-Software is obsolite and probably won't be updated becouse of new version writen in C#
