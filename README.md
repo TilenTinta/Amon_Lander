@@ -5,7 +5,7 @@
 Amon Lander is an open-source lander/hopper inspired by the **Sprite** vehicle created by Joe Barnard from the BPS.space YouTube channel.  
 Channel: https://www.youtube.com/channel/UCILl8ozWuxnFYXIe2svjHhg
 
-![Amon Lander (work in progress)](https://github.com/TilenTinta/Amon_Lander/blob/main/Pictures/lander_unfinished.jpg)
+![Amon Lander](https://github.com/TilenTinta/Amon_Lander/blob/main/Pictures/lander_unfinished.jpg)
 
 Everything has been built from the ground up—frame, electronics, firmware, and software. Most tools and programs used are free and widely available to makers.
 
