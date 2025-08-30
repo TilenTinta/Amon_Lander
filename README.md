@@ -1,18 +1,41 @@
-Amon Lander - PROJECT IN PROGRESS 
+# Amon Lander 
 
-Is an open source model of lander/hopper inspired by vehicle Sprite created 
-by Joe Barnard from YouTube channel BPS.space.
+**Project Status:** In Progress
+
+Amon Lander is an open-source lander/hopper inspired by the **Sprite** vehicle created by Joe Barnard from the BPS.space YouTube channel.  
 Channel: https://www.youtube.com/channel/UCILl8ozWuxnFYXIe2svjHhg
 
-![alt text](https://github.com/TilenTinta/Amon_Lander/blob/main/Pictures/lander_unfinished.jpg)
+![Amon Lander](https://github.com/TilenTinta/Amon_Lander/blob/main/Pictures/lander_unfinished.jpg)
 
-Everithing was created from ground up (frame, electronics, firmware, programs...). 
-All the tools and programs used (at least most of them) are free and are available to
-any maker these days.
+Everything has been built from the ground up—frame, electronics, firmware, and software. Most tools and programs used are free and widely available to makers.
 
-The plan was/is to create craft similar to Sprite that uses EDF fan to hover, four
-servos and fins to stabilize itself (TVC), sensors to monitor all the parameters, 
-custom PCB to do all computation and communications with computer on the grond. 
-Everything will be monitored and controlled from an app.
+## Concept
 
-The main idea of these project is to learn as much as possible about electroniks, 3D moddeling, coding (embedded and programs for PC), documentation reading, flight mechanics, regulators... and have as much fun as possible ;) A lot of things can be done easier, faster and with less complications but as said the idea behind the project is to learn new stuff
+- Uses an **EDF fan** to hover.
+- **Four servos + fins** for stabilization (TVC).
+- **Sensors** to monitor flight parameters.
+- **Custom PCB** handles computation and communications with a ground computer.
+- **Ground app** for monitoring and control.
+
+The main goal is to learn as much as possible about **electronics**, **3D modeling**, **embedded and desktop software**, **datasheets and documentation**, **flight mechanics**, and **control theory**—and to have fun along the way. Many things could be done faster and simpler, but the point of this project is learning.
+
+---
+
+## Additional Repositories
+
+This project was originally a single repository, but due to complexity it is now split across multiple repos:
+
+- **Amon Lander (this repo):** frame, test and control software, data.
+- **[Amon Board][amon-board]:** flight controllers and firmware.
+- **[Amon Link][amon-link]:** PC–drone communication (PCB and firmware).
+- **[Amon Ground Control][amon-gcs]:** PC software for communicating with the drone.
+
+---
+
+## Credits
+
+[amon-board]: https://github.com/TilenTinta/Amon_Board
+[amon-link]:  https://github.com/TilenTinta/Amon_Link
+[amon-gcs]:   https://github.com/TilenTinta/Amon_Ground_Control
+
+
