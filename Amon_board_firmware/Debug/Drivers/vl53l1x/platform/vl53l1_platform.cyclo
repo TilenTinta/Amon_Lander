@@ -1,9 +1,0 @@
-../Drivers/vl53l1x/platform/vl53l1_platform.c:7:8:VL53L1_WriteMulti	1
-../Drivers/vl53l1x/platform/vl53l1_platform.c:13:8:VL53L1_ReadMulti	1
-../Drivers/vl53l1x/platform/vl53l1_platform.c:19:8:VL53L1_WrByte	1
-../Drivers/vl53l1x/platform/vl53l1_platform.c:25:8:VL53L1_WrWord	1
-../Drivers/vl53l1x/platform/vl53l1_platform.c:35:8:VL53L1_WrDWord	1
-../Drivers/vl53l1x/platform/vl53l1_platform.c:47:8:VL53L1_RdByte	1
-../Drivers/vl53l1x/platform/vl53l1_platform.c:52:8:VL53L1_RdWord	1
-../Drivers/vl53l1x/platform/vl53l1_platform.c:63:8:VL53L1_RdDWord	1
-../Drivers/vl53l1x/platform/vl53l1_platform.c:74:8:VL53L1_WaitMs	1

@@ -1,6 +1,0 @@
-../Core/Src/GPS.c:10:6:GPS_Decode_GGA	1
-../Core/Src/GPS.c:16:6:GPS_Decode_GLL	1
-../Core/Src/GPS.c:22:6:GPS_Decode_GSA	1
-../Core/Src/GPS.c:27:6:GPS_Decode_GSV	1
-../Core/Src/GPS.c:32:6:GPS_Decode_RMC	1
-../Core/Src/GPS.c:37:6:GPS_Decode_VTG	1
