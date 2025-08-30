@@ -53,8 +53,6 @@ This project was originally a single repository, but due to complexity it is now
 
 ---
 
-## Credits
-
 [amon-board]: https://github.com/TilenTinta/Amon_Board
 [amon-link]:  https://github.com/TilenTinta/Amon_Link
 [amon-gcs]:   https://github.com/TilenTinta/Amon_Ground_Control
