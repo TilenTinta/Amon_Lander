@@ -8,10 +8,10 @@
 >
 > - **Amon Board** — flight controller hardware & firmware  
 >   https://github.com/TilenTinta/Amon_Board
-> - **Amon Link** — PC ↔ drone RF bridge (PCB & firmware)  
+> - **Amon Link** — PC - drone RF bridge (PCB & firmware)  
 >   https://github.com/TilenTinta/Amon_Link
 > - **Amon Ground Control** — desktop GCS for telemetry & control  
->   https://github.com/TilenTinta/Amon_Ground_Control
+>   https://github.com/TilenTinta/Amon_GroundControl_Software
 
 ![Amon Lander](https://github.com/TilenTinta/Amon_Lander/blob/main/Pictures/lander_unfinished.jpg)
 
