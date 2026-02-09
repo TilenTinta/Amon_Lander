@@ -45,12 +45,12 @@ Amon Lander is an educational lander/hopper platform designed to demonstrate ver
 ## System Concept
 
 - **Propulsion:** Single **EDF fan** for hover.  
-- **Control:** **Four servos** driving fins for stabilization (**TVC**).  
+- **Control:** **Four servos** drives fins for stabilization (**TVC**).  
 - **Sensing:** Onboard sensors monitor flight parameters.  
 - **Flight Computer:** **Custom PCB** handles computation and comms with the ground computer.  
 - **Ground Segment:** Desktop app for **monitoring and control**.
 
-> The core goal is to learn: electronics, 3D modeling, embedded/desktop software, reading documentation, flight mechanics, and control theory—while having fun. Many things could be done faster or simpler, but this project favors learning and exploration.
+> The goal is to learn: electronics, 3D modeling, embedded/desktop software, reading documentation, flight mechanics, and control theory—while having fun. Many things could be done faster or simpler, but this project idea is learning and exploration.
 
 ---
 
@@ -60,14 +60,14 @@ Amon Lander is an educational lander/hopper platform designed to demonstrate ver
 
 The frame is inspired by Sprite, with custom ideas and modifications. The entire airframe is provided in **STL** and **STEP** and is printable on a standard **FDM** printer.  
 - Early prototypes used **XPETG**; later versions used **LW‑PLA** to reduce weight.  
-- Frames shown here are **not yet flight‑tested**.  
+- Frame on image is **not yet flight‑tested** (at least not autonomous flight).  
 - Designed in **Autodesk Fusion 360 (Personal Use license)**.
 
 ![3D Model](https://github.com/TilenTinta/Amon_Lander/blob/main/Pictures/3DModel/3D_model2.PNG)
 
 ### LED Boards
 
-Compact PCBs with two LEDs (**red** and **white**) indicate system state. They mount on the leg ends and top tubes. Although each LED board has a screw hole, **adhesive is recommended** for attachment.
+Compact PCBs with two LEDs (**red** and **white**) indicate system state. They are mounted on the leg ends and top tubes. Although each LED board has a screw hole, **adhesive is recommended** for attachment.
 
 ![LED PCB](https://github.com/TilenTinta/Amon_Lander/blob/main/Pictures/PCB/PCB_LED1.PNG)
 
