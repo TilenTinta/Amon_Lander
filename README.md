@@ -2,7 +2,7 @@
 
 **Project Status:** In Progress
 
-**Short description:** An open‑source EDF‑hovering lander/hopper inspired by **Sprite** (BPS.space), built end‑to‑end for learning: frame, electronics, firmware, software, and documentation.
+**Short description:** An open‑source EDF‑hovering lander/hopper inspired by **Sprite** (BPS.space), built to learn as much as possible: frame, electronics, firmware, software, and documentation.
 
 > Part of the Amon Lander project:
 >
