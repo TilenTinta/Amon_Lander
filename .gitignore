@@ -1,9 +1,7 @@
 # ignore directories
 .gitignore
 Data/
-Datasheet/
-Control/
-
+#Control/
 
 # Used in future
 Test_stand
