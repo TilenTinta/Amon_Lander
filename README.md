@@ -96,6 +96,8 @@ Compact PCBs with two LEDs (**red** and **white**) indicate system state. They a
 - Perform staged tests: electronics bring‑up → servo only → tethered hover.  
 - Log telemetry and review for oscillations; tune control gains incrementally.  
 
+![TEST STAND](https://github.com/TilenTinta/Amon_Lander/blob/main/Pictures/Test_stand/PXL_20260324_212019166.jpg)
+
 ---
 
 ## Roadmap
