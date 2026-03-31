@@ -2,7 +2,6 @@
 close all;
 clear all;
 
-dt = 0.02;              % 50Hz
 g = 9.81;               % Gravitacija
 
 % Omejitve vhodov
@@ -11,14 +10,48 @@ EDF_max = 100;          % procenti
 servo_min = -45;        % stopinje
 servo_max = -45;        % stopinje
 
-% Vektor krmilnih vhodov: EDF[%], X+[deg], X-[deg], Y+[deg], Y-[deg]
-T_cmd = 0;
-angle_1_cmd = 0;
-angle_2_cmd = 0;
-angle_3_cmd = 0;
-angle_4_cmd = 0;
+% Servo offseti
+servo1_offset = 0;
+servo2_offset = 0;
+servo3_offset = 0;
+servo4_offset = 0;
 
-u = transpose([T_cmd, angle_1_cmd, angle_2_cmd, angle_3_cmd, angle_4_cmd]);
+% Matrika vplivov
+B_F = [0 0 0 0; 0 0 0 0; 0 0 0 0];
+
+
+f_0_T = 0;  % Default sila (offset EDF-ja na drona)
+r_T = ;    % Offset EDF-ja iz CoM
+
+% Položaj finov glede na CoM
+r_x_plus  = [ 0.08 ; 0 ; 0 ];   % m
+r_x_minus = [-0.08 ; 0 ; 0 ];   % m
+
+r_y_plus  = [0 ; 0.08 ; 0 ];    % m
+r_y_minus = [0 ;-0.08 ; 0 ];    % m
+
+% Smerni vektorji (kalibracija iz meritev)
+n_x_plus  = [0; 1; 0];
+n_x_minus = [0;-1; 0];
+
+n_y_plus  = [1; 0; 0];
+n_y_minus = [-1;0; 0];
+
+% Koeficient učinkovitosti fina (k premajhen - dron ne reagira, k prevelik - dron preveč agresiven)
+k_x_plus  = 0.5;
+k_x_minus = 0.5;
+k_y_plus  = 0.5;
+k_y_minus = 0.5;
+
+% Vektor krmilnih vhodov: EDF[%], X+[deg], X-[deg], Y+[deg], Y-[deg]
+edf_cmd = 0;
+servo1_cmd = 0;
+servo2_cmd = 0;
+servo3_cmd = 0;
+servo4_cmd = 0;
+
+u = [edf_cmd, servo1_cmd, servo2_cmd, servo3_cmd, servo4_cmd];
+
 
 % Razširjen vektor stanj:
 p = [0; 0; 0];              % px, py, pz
@@ -46,6 +79,10 @@ alpha_T = 0;                % preslikava PWM - thrust
 t_d = 0;
 
 
+
+
+
+
 %% Karakterizacija EDF motorja
 T_end = 14000; 
 dt = 2;          
@@ -58,7 +95,3 @@ end
 
 
 
-%% ##################### Funkcije#####################
-function T_out = trust_delay(T_cmd, T, tau_edf)
-    T_tilde = (1/T_edf) * (T_cmd - T);
-end
