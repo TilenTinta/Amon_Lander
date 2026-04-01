@@ -1,5 +1,6 @@
 # ignore directories
 .gitignore
+*.mp4
 Data/
 #Control/
 
