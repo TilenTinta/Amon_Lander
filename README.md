@@ -1,4 +1,4 @@
-# Amon Lander — Lander/Hopper (Frame, Electronics & Software)
+# Amon Lander Project
 
 **Project Status:** In Progress
 
