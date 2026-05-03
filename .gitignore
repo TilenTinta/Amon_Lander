@@ -2,6 +2,7 @@
 .gitignore
 *.mp4
 Data/
-#Control/
+__pycache__/
+*.venv
 
 echo .DS_Store >> .gitignore

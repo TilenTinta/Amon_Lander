@@ -5,8 +5,8 @@ Amon Lander - Simulator
 import numpy as np
 from collections import deque
 
-from models.full_dynamic import full_dynamics
-from models.actuators import edf_block, edf_block_2nd_order, servo_block_2nd_order
+from models_numpy.full_dynamic import full_dynamics
+from models_numpy.actuators import delay_buffer, edf_block, edf_block_2nd_order, servo_block_2nd_order
 from simulation.intergrators import rk4_step
 
 
@@ -133,11 +133,6 @@ def time_vector(n_steps, dt):
 # ============================================================
 # Dodatno: simulacija EDF
 # ============================================================
-def create_delay_buffer(delay_s, dt, init_value=0.0):
-    n = max(1, int(round(delay_s / dt)))
-    return deque([init_value]*n, maxlen=n)
-
-
 def simulate_edf(time, edf_cmd, params):
     dt = time[1] - time[0]
 
@@ -145,7 +140,7 @@ def simulate_edf(time, edf_cmd, params):
     T_dot = 0.0
     T_sim = []
 
-    delay_buffer = create_delay_buffer(params.actuator.edf_delay, dt, init_value=0.0)
+    delay_buffer = delay_buffer(params.actuator.edf_delay, dt, init_value=0.0)
 
     for k in range(len(time)):
         cmd = edf_cmd[k]
@@ -174,12 +169,12 @@ def simulate_servo(time, servo_cmd, params):
     delta_dot = 0.0
     delta_sim = []
 
-    delay_buffer = create_delay_buffer(params.actuator.servo_delay, dt, init_value=0.0)
+    delay = delay_buffer(params.actuator.servo_delay, dt, init_value=0.0)
 
     for k in range(len(time)):
         cmd = servo_cmd[k]
 
-        ddelta, ddelta_dot, delta_cmd, servo_cmd_delayed = servo_block_2nd_order(delta, delta_dot, cmd, delay_buffer, params)
+        ddelta, ddelta_dot, delta_cmd, servo_cmd_delayed = servo_block_2nd_order(delta, delta_dot, cmd, delay, params)
 
         # Eulerjeva integracija
         delta = delta + dt * ddelta

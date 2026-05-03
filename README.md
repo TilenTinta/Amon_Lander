@@ -96,16 +96,24 @@ Compact PCBs with two LEDs (**red** and **white**) indicate system state. They a
 - Perform staged tests: electronics bring‑up → servo only → tethered hover.  
 - Log telemetry and review for oscillations; tune control gains incrementally.  
 
-![TEST STAND](https://github.com/TilenTinta/Amon_Lander/blob/main/Pictures/Test_stand/PXL_20260324_212019166.jpg)
+### Test stand
+For each test there is a separate test stand. There are:
+- Thrust stand (test of EDF thrust level)
+- Servo stand (test of servo rotation)
+- One and two DoF stand (test of drone moments and fin deflection effect)
+
+All tests are done with the help of an Arduino Uno board used for collecting data from sensors. At the same time, a connection over UART-USB is established to a drone for direct communication and command transmission. Everything is monitored by Jupyter scripts for easy and quick tests. Results are saved in **.csv** files for easy future analysis.
+
+![TEST STAND](https://github.com/TilenTinta/Amon_Lander/blob/main/Pictures/Test_stand/PXL_20260328_113547344.jpg)
 
 ---
 
-## Roadmap
+## Control algorithm
+The initial plan was to use **Matlab** with **Simulink** to create a complete mathematical model of the drone. After further research, I found that many different methods could be used for controlling a drone like this. After designing the first model in **Simulink** and experimenting with the **Simulink Coder** plugin — with the idea of converting it to standard C code for use on my flight controller — I abandoned this approach. The complete model was then rewritten in **Python** using the **NumPy** library, which is used to test, tune, and further refine the drone model. This same model was subsequently rewritten in **CasADi** style, inheriting the **NumPy** parameters. It is still used in Python, but now with the **acados** framework and optimizer to export the complete control code directly to my MCU/flight controller.
 
-- Refine frame geometry and weight distribution.  
-- Expand build and calibration documentation.  
-- Integrate tighter loops with **Amon Board** firmware and **Amon Link**.  
-- Tethered hovers → free flight milestones.
+Links to libraries:
+- **CasADi**: https://github.com/casadi/casadi
+- **acados**: https://github.com/acados/acados
 
 ---
 

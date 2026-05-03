@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 from scipy.optimize import least_squares
 
-from models.parameters import AmonParams
+from models_numpy.parameters import AmonParams
 from simulation.plotting import plot_servo_response
 from simulation.simulator import simulate_servo
 
