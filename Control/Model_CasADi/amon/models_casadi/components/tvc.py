@@ -32,6 +32,8 @@ def single_fin_force(T, delta_i, n_i, k_i):
     """
     Sila na posameznem krilcu:
     F_i = T * k_i * sin(delta_i) * n_i
+    Info:
+        - sin(delta_i): nelinearna odvisnost sile od kota krilca (basic aerodynamics)
     """
     return T * k_i * sin(delta_i) * n_i
 

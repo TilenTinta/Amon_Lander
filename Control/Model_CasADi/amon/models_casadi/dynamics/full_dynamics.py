@@ -57,7 +57,7 @@ def unpack_input(u):
 # ============================================================
 def full_dynamics(x, u, params):
     """
-    Celoten CasADi model
+    Celoten Amon drone CasADi model
     """
 
     p, v, q, omega, T, T_dot, delta, delta_dot = unpack_state(x)

@@ -1,6 +1,8 @@
 from casadi import MX, SX, DM
 
-
+"""
+    Unused!!!
+"""
 def is_symbolic(x):
     return isinstance(x, (MX, SX))
 

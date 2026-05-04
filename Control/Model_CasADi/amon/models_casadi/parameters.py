@@ -16,8 +16,8 @@ X_T_DOT = 14
 X_DELTA = slice(15, 19)
 X_DELTA_DOT = slice(19, 23)
 
-NX = 23
-NU = 5
+NX = 23 # dimenzija stanja
+NU = 5  # EDF + 4 servoji
 
 
 # ============================================================
@@ -32,7 +32,7 @@ class AmonParamsCasadi:
         # ---------------------------
         self.physical = params_numpy.physical
 
-        # CasADi DM conversion
+        # CasADi DM pretvorba
         self.physical.J = DM(self.physical.J)
         self.physical.r_T = DM(self.physical.r_T)
         self.physical.f_0_T = DM(self.physical.f_0_T)

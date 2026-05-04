@@ -29,7 +29,7 @@ def lookup_1d(x, x_table, y_table):
     x_table, y_table = list ali DM
     """
 
-    # pretvori v CasADi DM
+    # pretvori v CasADi DM (Casadi verzija Numpy array-a)
     x_table = DM(x_table)
     y_table = DM(y_table)
 

@@ -3,7 +3,7 @@ from casadi import *
 
 def normalize_quaternion(q):
     """
-    Normalizacija brez NaN
+    Normalizacija kvaterniona brez NaN vrednosti
     """
     norm_q = norm_2(q)
 
