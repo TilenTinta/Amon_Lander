@@ -1,3 +1,4 @@
+from models_casadi.integrators.rk4 import normalize_quaternion
 from casadi import *
 
 # ============================================================
@@ -42,4 +43,5 @@ def omega_matrix(omega):
 # Odvod kvaterniona
 # ============================================================
 def quat_derivative(q, omega):
+    #q = normalize_quaternion(q)
     return 0.5 * mtimes(omega_matrix(omega), q)

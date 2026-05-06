@@ -9,7 +9,7 @@ def gravity_vector(params):
     """
     g v inertial sistemu
     """
-    return vertcat(0, 0, params.physical.g)
+    return vertcat(0, 0, -params.physical.g)
 
 
 # ============================================================

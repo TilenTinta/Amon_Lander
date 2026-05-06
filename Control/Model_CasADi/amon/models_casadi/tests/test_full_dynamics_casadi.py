@@ -1,6 +1,6 @@
 from casadi import MX, Function
 from models_numpy.parameters import AmonParams
-from models_casadi.dynamics.full_dynamics import full_dynamics
+from models_casadi.dynamics.full_dynamics import full_dynamics_2nd_order
 
 params = AmonParams()
 
@@ -10,7 +10,7 @@ nu = 5
 x = MX.sym("x", nx)
 u = MX.sym("u", nu)
 
-x_dot = full_dynamics(x, u, params)
+x_dot = full_dynamics_2nd_order(x, u, params)
 
 f = Function("f", [x, u], [x_dot]) # Funkcija za NMPC
 

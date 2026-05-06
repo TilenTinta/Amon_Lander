@@ -1,8 +1,10 @@
+import os
+
 from acados_template import AcadosOcp, AcadosOcpSolver
 import numpy as np
 
 # OCP (Optimal Control Problem)
-def build_ocp(model, nx, nu, N, dt):
+def build_ocp(model, nx, nu, N, dt, code_export_dir=None):
 
     ocp = AcadosOcp() # definicija Optimal Control Problem-a
 
@@ -70,6 +72,7 @@ def build_ocp(model, nx, nu, N, dt):
     # zadnji korak / konec horizonta kaznuješ samo stanje (aktuatorji so važni le na poti)
     ocp.cost.W_e = Q
 
+
     # --------------------------------------------------------
     # CONSTRAINTS - omejitve aktuatorjev
     # --------------------------------------------------------
@@ -77,11 +80,33 @@ def build_ocp(model, nx, nu, N, dt):
     ocp.constraints.ubu = np.array([100, 45, 45, 45, 45])
     ocp.constraints.idxbu = np.arange(nu)
 
+
     # --------------------------------------------------------
-    # SOLVER OPTIONS
+    # STM32 / embedded nastavitve
     # --------------------------------------------------------
+    # Brez dinamične alokacije (malloc) - obvezno za STM32
+    ocp.solver_options.with_solution_sens_wrt_params = False    # nočem malloc()
+    ocp.solver_options.sim_method_num_stages = 4
+    ocp.solver_options.sim_method_num_steps = 2
     ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"   # uporabljen solver (HPIPM)
     ocp.solver_options.integrator_type = "ERK"                  # Uporabljen integrator (explicit Runge-Kutta)
     ocp.solver_options.nlp_solver_type = "SQP_RTI"              # Uporabljen solver (SQP_RTI - Real-Time Iteration)
+    ocp.solver_options.qp_solver_cond_N = N  
+    ocp.solver_options.nlp_solver_max_iter = 5
+    ocp.solver_options.ext_fun_compile_flags = "-O2"
+    ocp.solver_options.print_level = 0
+    ocp.solver_options.qp_solver_iter_max = 20
+    
 
-    return AcadosOcpSolver(ocp, json_file="acados_ocp.json")
+    # Output direktorij za generirano C kodo
+    if code_export_dir is None:
+        code_export_dir = os.path.join(os.path.dirname(__file__), "c_generated_code")
+    ocp.code_export_directory = code_export_dir
+
+    # Generiraj samo C kodo, ne kompiliraj (za embedded)
+    return AcadosOcpSolver(
+        ocp,
+        json_file=os.path.join(code_export_dir, "acados_ocp.json"),
+        generate=True,
+        build=False       # <-- ne kompiliraj za Linux, samo generiraj .c/.h
+    )

@@ -1,9 +1,15 @@
 from models_numpy.parameters import AmonParams
 from models_casadi.parameters import AmonParamsCasadi, NX, NU
 from models_casadi.builder.build_model import build_model
-from models_casadi.integrators.build_discrete_model import build_discrete_model
+from models_casadi.builder.build_discrete_model import build_discrete_model
 from models_casadi.control.nmpc import build_nmpc
 import time 
+
+### ------------------------------------------------------------
+# Info:
+# - Ni measurement modela, estimatorja ali identifikacijskega postopka.
+
+### ------------------------------------------------------------
 
 ### -------------------------- NMPC ---------------------------- ###
 
@@ -14,14 +20,14 @@ params_np = AmonParams()
 params = AmonParamsCasadi(params_np)
 
 # ------------------------------------------------------------
-# CONTINUOUS MODEL - x_dot = f(x,u) (diferencialna enačba sistema - test only)
+# CONTINUOUS MODEL - x_dot = f(x,u) (diferencialna enačba sistema)
 # ------------------------------------------------------------
-f = build_model(params)
+f = build_model(params, model_type="instant") # "instant", "1st_order", "2nd_order"
 
 # ------------------------------------------------------------
 # DISCRETE MODEL - x_{k+1} = F(x_k, u_k) (za NMPC)
 # ------------------------------------------------------------
-dt = 0.01   # EDF je hiter
+dt = 0.01   # 0.01
 
 F = build_discrete_model(f, NX, NU, dt)
 
@@ -56,7 +62,7 @@ opti, X, U, X0, X_ref = build_nmpc(F, NX, NU, N, dt)
 # --------------------------------------------------------
 # INITIAL STATE
 # --------------------------------------------------------
-# Dron potlen brez rotacije
+# Dron potlen brez rotacije (na ravnini)
 x0 = [0]*NX
 x0[6] = 1.0  
 
@@ -80,17 +86,19 @@ opti.set_value(X_ref, xref)
 opti.set_initial(X, 0)
 opti.set_initial(U, 0)
 opti.set_initial(X[6, :], 1.0)  # kvaternion = 1
-opti.set_initial(U[0, :], 75)   # približen thrust za lebdenje
+opti.set_initial(U[0, :], 85)   # približen thrust za lebdenje
 
 opti.solver("ipopt", {
     "ipopt.hessian_approximation": "limited-memory",
-    "ipopt.max_iter": 2000,
-    "print_time": True,
-    #"ipopt.print_level": 2
+    "ipopt.max_iter": 200,
+    "ipopt.tol": 1e-3,
+    "ipopt.acceptable_tol": 1e-2,
+    "ipopt.print_level": 0,
+    "print_time": False
 })
 
 x = x0 # uporaba v iteraciji
-for i in range(100):
+for i in range(500):
 
     opti.set_value(X0, x)
     opti.set_value(X_ref, xref)
@@ -109,3 +117,4 @@ for i in range(100):
     x = F(x, u)   # simulacija
 
     print("### Height:", x[2])
+    print("### Thrust command:", u[0])
