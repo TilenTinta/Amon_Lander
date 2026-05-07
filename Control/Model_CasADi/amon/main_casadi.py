@@ -5,12 +5,6 @@ from models_casadi.builder.build_discrete_model import build_discrete_model
 from models_casadi.control.nmpc import build_nmpc
 import time 
 
-### ------------------------------------------------------------
-# Info:
-# - Ni measurement modela, estimatorja ali identifikacijskega postopka.
-
-### ------------------------------------------------------------
-
 ### -------------------------- NMPC ---------------------------- ###
 
 # ------------------------------------------------------------
@@ -27,7 +21,7 @@ f = build_model(params, model_type="instant") # "instant", "1st_order", "2nd_ord
 # ------------------------------------------------------------
 # DISCRETE MODEL - x_{k+1} = F(x_k, u_k) (za NMPC)
 # ------------------------------------------------------------
-dt = 0.01   # 0.01
+dt = 0.02   # 0.01
 
 F = build_discrete_model(f, NX, NU, dt)
 
@@ -49,7 +43,7 @@ F = build_discrete_model(f, NX, NU, dt)
 # Algoritem vodenja: NMPC
 # ------------------------------------------------------------
 # horizon
-N = 20
+N = 10
 
 # RECEDING HORIZON CONTROL
 # 1. poglej trenutno stanje
@@ -86,7 +80,7 @@ opti.set_value(X_ref, xref)
 opti.set_initial(X, 0)
 opti.set_initial(U, 0)
 opti.set_initial(X[6, :], 1.0)  # kvaternion = 1
-opti.set_initial(U[0, :], 85)   # približen thrust za lebdenje
+opti.set_initial(U[0, :], 95)   # približen thrust za lebdenje
 
 opti.solver("ipopt", {
     "ipopt.hessian_approximation": "limited-memory",
@@ -98,7 +92,7 @@ opti.solver("ipopt", {
 })
 
 x = x0 # uporaba v iteraciji
-for i in range(500):
+for i in range(1000):
 
     opti.set_value(X0, x)
     opti.set_value(X_ref, xref)
