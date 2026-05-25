@@ -4,5 +4,6 @@
 Data/
 __pycache__/
 *.venv
+Control/Additional_ibraries/*
 
 echo .DS_Store >> .gitignore
