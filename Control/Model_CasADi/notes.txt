@@ -1,0 +1,7 @@
+1) Run python CasaADi simulation
+cd Amon_lander/Model_CasADi
+python -m amon.model_casadi.control.sim_acados_nmpc
+
+2) Run acados c-code simulation
+cd amon/model_casadi/acados_generated/closed_loop_c
+make run

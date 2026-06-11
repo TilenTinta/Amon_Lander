@@ -83,7 +83,7 @@ def send_power(
 
 def main() -> int:
     # Example usage:
-    #   python.exe edf_set_power.py --port COM5 --baud 9600 --power 30
+    #   python.exe edf_set_power.py --port COM5 --baud 115200 --power 30
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", required=True, help="Drone UART COM port (e.g. COM5)")
     ap.add_argument("--baud", type=int, default=9600, help="Drone UART baud rate (default: 9600)")

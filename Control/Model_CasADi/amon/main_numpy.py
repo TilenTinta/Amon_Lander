@@ -1,11 +1,20 @@
 """
-Amon Lander - Glavni file
+######################################
+    _   __  __  ___  _  _ 
+   /_\ |  \/  |/ _ \| \| |
+  / _ \| |\/| | (_) | .` |
+ /_/ \_\_|  |_|\___/|_|\_|
+                          
+###############################################
+Author: Tilen T.
+Date: 2026.06.10
+Description: Glavni file - numpy verzija
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-from amon.models_numpy.parameters import (
+from amon.model_numpy.parameters import (
     X_P,
     X_V,
     X_Q,
