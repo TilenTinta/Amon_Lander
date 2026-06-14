@@ -13,7 +13,7 @@
 > - **Amon Ground Control** — desktop GCS for telemetry & control  
 >   https://github.com/TilenTinta/Amon_GroundControl_Software
 
-![Amon Lander](https://github.com/TilenTinta/Amon_Lander/blob/main/Pictures/lander_finished_1.jpg)
+![Amon Lander](https://github.com/TilenTinta/Amon_Lander/blob/main/Pictures/lander_finished_2.jpg)
 
 ---
 
