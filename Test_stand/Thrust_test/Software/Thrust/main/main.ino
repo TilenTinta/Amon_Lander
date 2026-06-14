@@ -12,8 +12,20 @@
 // User settings
 // =========================
 #define USE_SECOND_LOADCELL 0   // 1 = use both, 0 = use only first
-#define STREAM_HZ 8             // output frequency to PC
+
+// HX711 hardware rate:
+// 10 = RATE pin connected to GND
+// 80 = RATE pin connected to VCC
+#define HX711_RATE_HZ 10
+
+// How often data is transmitted to PC
+#define SERIAL_RATE_HZ 10
+
 #define AVG_COUNT 1             // number of HX711 reads to average // 4
+
+// Calculate periods
+const uint32_t hx711PeriodUs  = 1000000UL / HX711_RATE_HZ;
+const uint32_t serialPeriodUs = 1000000UL / SERIAL_RATE_HZ;
 
 // HX711 #1 pins
 const int HX1_DOUT = 2;
@@ -34,32 +46,44 @@ HX711 scale1;
 HX711 scale2;
 
 // Timing
-unsigned long samplePeriodUs = 1000000UL / STREAM_HZ;
-unsigned long lastSampleUs = 0;
+unsigned long lastHxReadUs = 0;
+unsigned long lastSerialUs = 0;
+
+// Last valid measurements
+long load1 = 0;
+long load2 = 0;
 
 
 ////////////////////////////////////////////////////////
 /* Functions */
-long readAverage(HX711 &scale, int avgCount) 
+
+long readAverage(HX711 &scale, int avgCount)
 {
   long sum = 0;
   int validReads = 0;
 
-  for (int i = 0; i < avgCount; i++) {
+  for (int i = 0; i < avgCount; i++)
+  {
     unsigned long start = micros();
-    while (!scale.is_ready()) {
-      if ((micros() - start) > 5000) { // 5 ms timeout per try
+
+    while (!scale.is_ready())
+    {
+      if ((micros() - start) > 5000)
+      {
+        // 5 ms timeout per try
         break;
       }
     }
 
-    if (scale.is_ready()) {
+    if (scale.is_ready())
+    {
       sum += scale.read();
       validReads++;
     }
   }
 
-  if (validReads == 0) {
+  if (validReads == 0)
+  {
     return 0;
   }
 
@@ -67,16 +91,15 @@ long readAverage(HX711 &scale, int avgCount)
 }
 
 
-
-void performTare() 
+void performTare()
 {
   const int N = 50;
 
   long sum1 = 0;
   long sum2 = 0;
 
-  for (int i = 0; i < N; i++) {
-
+  for (int i = 0; i < N; i++)
+  {
     while (!scale1.is_ready()) {}
     sum1 += scale1.read();
 
@@ -99,7 +122,8 @@ void performTare()
 
 
 ///////////////////////////////////////////////////////////////
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   while (!Serial) {}
 
@@ -113,39 +137,62 @@ void setup() {
 
   Serial.println("# Arduino HX711 streamer started");
   Serial.println("# Format: arduino_us,load1,load2");
+  Serial.print("# HX711 rate: ");
+  Serial.print(HX711_RATE_HZ);
+  Serial.println(" Hz");
+
+  Serial.print("# Serial rate: ");
+  Serial.print(SERIAL_RATE_HZ);
+  Serial.println(" Hz");
 }
 
 
 ///////////////////////////////////////////////////////////////
-void loop() {
+void loop()
+{
   unsigned long nowUs = micros();
 
-  if (Serial.available()) {
-
+  // --------------------------------------------------
+  // Commands from PC
+  // --------------------------------------------------
+  if (Serial.available())
+  {
     char c = Serial.read();
 
-    if (c == 'T') {
+    if (c == 'T')
+    {
       performTare();
     }
   }
 
-  if ((nowUs - lastSampleUs) >= samplePeriodUs) {
-    lastSampleUs = nowUs;
+  // --------------------------------------------------
+  // HX711 acquisition
+  // --------------------------------------------------
+  if ((nowUs - lastHxReadUs) >= hx711PeriodUs)
+  {
+    lastHxReadUs = nowUs;
 
-    long load1 = 0;
-    long load2 = 0;
-
-    if (scale1.is_ready()) {
+    if (scale1.is_ready())
+    {
       load1 = readAverage(scale1, AVG_COUNT) - offset1;
     }
 
 #if USE_SECOND_LOADCELL
-    if (scale2.is_ready()) {
+    if (scale2.is_ready())
+    {
       load2 = readAverage(scale2, AVG_COUNT) - offset2;
     }
 #else
     load2 = 0;
 #endif
+  }
+
+  // --------------------------------------------------
+  // Serial streaming
+  // --------------------------------------------------
+  if ((nowUs - lastSerialUs) >= serialPeriodUs)
+  {
+    lastSerialUs = nowUs;
 
     // CSV line: timestamp_us,load1,load2
     Serial.print(nowUs);
