@@ -16,8 +16,24 @@ X_T_DOT = 14
 X_DELTA = slice(15, 19)
 X_DELTA_DOT = slice(19, 23)
 
-NX = 23 # dimenzija stanja
+NX_INSTANT = 13
+NX_1ST_ORDER = 18
+NX_2ND_ORDER = 23
+
+NX = NX_2ND_ORDER # dimenzija stanja
 NU = 5  # EDF + 4 servoji
+
+
+# Sprememba števila stanj glede na izbran model (poenostavitev za MCU)
+def state_dimension(model_type):
+    if model_type == "instant":
+        return NX_INSTANT
+    if model_type == "1st_order":
+        return NX_1ST_ORDER
+    if model_type == "2nd_order":
+        return NX_2ND_ORDER
+
+    raise ValueError(f"Nepodprt tip modela: {model_type}")
 
 
 # ============================================================

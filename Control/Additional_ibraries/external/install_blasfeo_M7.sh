@@ -21,7 +21,8 @@ CFLAGS=-O2 \
        -mfpu=fpv5-d16 \
        -ffast-math \
        -ffunction-sections \
-       -fdata-sections
+       -fdata-sections \
+       -DBLASFEO_USE_SINGLE_PRECISION
 
 EOF
 

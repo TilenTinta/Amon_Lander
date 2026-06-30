@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import struct
 from dataclasses import dataclass
 
 # Frame and protocol base
@@ -114,6 +115,8 @@ TVL_IMU = 0x33
 TVL_IMU_TEMP = 0x34
 TVL_GPS = 0x35
 
+ANGLE_SCALE = 1000.0
+
 
 # CRC-16/Modbus (poly 0xA001) with 0xFFFF initial value
 def crc16_cal(data: bytes) -> int:
@@ -171,6 +174,57 @@ def build_ping_frame() -> bytes:
     )
 
 
+def encode_servo_angle(angle_deg: int) -> int:
+    """Encode a physical servo angle using the DUT's angle + 90 convention."""
+    encoded = int(angle_deg) + 90
+    if encoded < -128 or encoded > 127:
+        raise ValueError(f"Encoded servo value out of int8 range: {encoded}")
+    return encoded
+
+
+def build_calib_frame(
+    edf_pwr_percent: int,
+    *,
+    x_plus_angle_deg: int = 0,
+    x_minus_angle_deg: int = 0,
+    y_plus_angle_deg: int = 0,
+    y_minus_angle_deg: int = 0,
+) -> bytes:
+    """Build the EDF/servo command used by the thrust, servo and moment tests."""
+    power = int(edf_pwr_percent)
+    if not 0 <= power <= 100:
+        raise ValueError("edf_pwr_percent must be in range 0..100")
+
+    payload = struct.pack(
+        "<bbbbb",
+        power,
+        encode_servo_angle(x_plus_angle_deg),
+        encode_servo_angle(x_minus_angle_deg),
+        encode_servo_angle(y_plus_angle_deg),
+        encode_servo_angle(y_minus_angle_deg),
+    )
+    return build_frame(
+        version=PROTOCOL_VER,
+        flags=FLAG_DATA,
+        src=ID_PC,
+        dst=ID_DRONE,
+        opcode=OPT_CAL_PARAM,
+        payload=payload,
+    )
+
+
+def build_ident_moment_frame() -> bytes:
+    """Enable the DUT moment-identification mode."""
+    return build_frame(
+        version=PROTOCOL_VER,
+        flags=FLAG_DATA,
+        src=ID_PC,
+        dst=ID_DRONE,
+        opcode=OPT_IDENTI_MOMENT,
+        payload=b"",
+    )
+
+
 @dataclass
 class ParsedFrame:
     version: int
@@ -213,3 +267,39 @@ def parse_frame(frame: bytes) -> ParsedFrame | None:
         opcode=header[4],
         payload=payload,
     )
+
+
+def decode_opt_telemetry(
+    payload: bytes,
+    *,
+    angle_scale: float = ANGLE_SCALE,
+) -> dict[str, float | int] | None:
+    """Decode the fixed 31-byte moment-test telemetry payload."""
+    if len(payload) != 31 or angle_scale == 0:
+        return None
+
+    tick_ms, edf_percent = struct.unpack_from(">IB", payload, 0)
+    values = struct.unpack_from(">13h", payload, 5)
+    scaled = [value / float(angle_scale) for value in values]
+
+    names = (
+        "servo_xp",
+        "servo_xn",
+        "servo_yp",
+        "servo_yn",
+        "roll",
+        "pitch",
+        "yaw",
+        "acc_x",
+        "acc_y",
+        "acc_z",
+        "gyro_x",
+        "gyro_y",
+        "gyro_z",
+    )
+    decoded: dict[str, float | int] = {
+        "tick_ms": tick_ms,
+        "edf_percent": edf_percent,
+    }
+    decoded.update(zip(names, scaled))
+    return decoded

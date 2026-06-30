@@ -34,7 +34,7 @@
 #include "acados_c/sim_interface.h"
 #include "acados_c/external_function_interface.h"
 
-#define AMON_MODEL_NX     23
+#define AMON_MODEL_NX     13
 #define AMON_MODEL_NZ     0
 #define AMON_MODEL_NU     5
 #define AMON_MODEL_NP     0

@@ -73,7 +73,7 @@ int amon_model_acados_sim_create(amon_model_sim_solver_capsule * capsule)
     const int np = AMON_MODEL_NP;
     bool tmp_bool;
 
-    double Tsim = 0.01;
+    double Tsim = 0.02;
 
     capsule->acados_sim_mem = NULL;
 
@@ -146,9 +146,9 @@ int amon_model_acados_sim_create(amon_model_sim_solver_capsule * capsule)
     sim_opts_set(amon_model_sim_config, amon_model_sim_opts, "collocation_type", &collocation_type);
 
  
-    tmp_int = 4;
-    sim_opts_set(amon_model_sim_config, amon_model_sim_opts, "num_stages", &tmp_int);
     tmp_int = 2;
+    sim_opts_set(amon_model_sim_config, amon_model_sim_opts, "num_stages", &tmp_int);
+    tmp_int = 1;
     sim_opts_set(amon_model_sim_config, amon_model_sim_opts, "num_steps", &tmp_int);
     tmp_bool = 0;
     sim_opts_set(amon_model_sim_config, amon_model_sim_opts, "jac_reuse", &tmp_bool);
@@ -183,8 +183,8 @@ int amon_model_acados_sim_create(amon_model_sim_solver_capsule * capsule)
 
     /* initialize input */
     // x
-    double x0[23];
-    for (int ii = 0; ii < 23; ii++)
+    double x0[13];
+    for (int ii = 0; ii < 13; ii++)
         x0[ii] = 0.0;
 
     sim_in_set(amon_model_sim_config, amon_model_sim_dims,
@@ -200,11 +200,11 @@ int amon_model_acados_sim_create(amon_model_sim_solver_capsule * capsule)
                amon_model_sim_in, "u", u0);
 
     // S_forw
-    double S_forw[644];
-    for (int ii = 0; ii < 644; ii++)
+    double S_forw[234];
+    for (int ii = 0; ii < 234; ii++)
         S_forw[ii] = 0.0;
-    for (int ii = 0; ii < 23; ii++)
-        S_forw[ii + ii * 23 ] = 1.0;
+    for (int ii = 0; ii < 13; ii++)
+        S_forw[ii + ii * 13 ] = 1.0;
 
 
     sim_in_set(amon_model_sim_config, amon_model_sim_dims,

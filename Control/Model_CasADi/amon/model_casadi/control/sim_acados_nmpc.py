@@ -14,7 +14,7 @@ if str(ACADOS_TEMPLATE_ROOT) not in sys.path:
     sys.path.insert(0, str(ACADOS_TEMPLATE_ROOT))
 
 from model_numpy.parameters import AmonParams
-from model_casadi.parameters import AmonParamsCasadi
+from model_casadi.parameters import AmonParamsCasadi, state_dimension
 from model_casadi.model_builder.build_model import build_model
 from model_casadi.control.acados_nmpc import (
     build_ocp,
@@ -23,11 +23,58 @@ from model_casadi.control.acados_nmpc import (
     hover_yrefs,
 )
 from model_casadi.control.nmpc_config import (
+    INITIAL_PITCH_DEG,
+    INITIAL_ROLL_DEG,
+    INITIAL_YAW_DEG,
     NMPC_DT,
     NMPC_MODEL_TYPE,
     NMPC_N,
     SIM_TIME,
 )
+
+
+def euler_deg_to_quat(roll_deg, pitch_deg, yaw_deg):
+    """
+    Euler koti [deg] -> kvaternion [qw, qx, qy, qz]
+    """
+    roll = np.deg2rad(roll_deg)
+    pitch = np.deg2rad(pitch_deg)
+    yaw = np.deg2rad(yaw_deg)
+
+    cr = np.cos(roll / 2.0)
+    sr = np.sin(roll / 2.0)
+    cp = np.cos(pitch / 2.0)
+    sp = np.sin(pitch / 2.0)
+    cy = np.cos(yaw / 2.0)
+    sy = np.sin(yaw / 2.0)
+
+    return np.array([
+        cr * cp * cy + sr * sp * sy,
+        sr * cp * cy - cr * sp * sy,
+        cr * sp * cy + sr * cp * sy,
+        cr * cp * sy - sr * sp * cy,
+    ], dtype=float)
+
+
+def quat_to_euler_deg(q):
+    """
+    Kvaternion [qw, qx, qy, qz] -> Euler koti [deg]
+    """
+    qw, qx, qy, qz = q
+
+    sinr_cosp = 2.0 * (qw * qx + qy * qz)
+    cosr_cosp = 1.0 - 2.0 * (qx * qx + qy * qy)
+    roll = np.arctan2(sinr_cosp, cosr_cosp)
+
+    sinp = 2.0 * (qw * qy - qz * qx)
+    sinp = np.clip(sinp, -1.0, 1.0)
+    pitch = np.arcsin(sinp)
+
+    siny_cosp = 2.0 * (qw * qz + qx * qy)
+    cosy_cosp = 1.0 - 2.0 * (qy * qy + qz * qz)
+    yaw = np.arctan2(siny_cosp, cosy_cosp)
+
+    return np.rad2deg([roll, pitch, yaw])
 
 
 def main():
@@ -36,7 +83,7 @@ def main():
     ####################################################################
 
     params = AmonParamsCasadi(AmonParams())
-    x_dim = 23
+    x_dim = state_dimension(NMPC_MODEL_TYPE)
     u_dim = 5
     N = NMPC_N
     dt = NMPC_DT
@@ -50,9 +97,12 @@ def main():
     ####################################################################
     # Zacetno stanje
     ####################################################################
-
     x = np.zeros(x_dim, dtype=float)
-    x[6] = 1.0
+    x[6:10] = euler_deg_to_quat(
+        INITIAL_ROLL_DEG,
+        INITIAL_PITCH_DEG,
+        INITIAL_YAW_DEG
+    )
 
     u_prev = hover_input_ref(u_dim)
 
@@ -72,7 +122,6 @@ def main():
     ####################################################################
     # Simulacijska zanka
     ####################################################################
-
     log_x = [x.copy()]
     log_u = []
     log_t = [0.0]
@@ -114,10 +163,12 @@ def main():
         log_t.append(t + dt)
 
         if step % 50 == 0 or step == n_steps - 1:
+            roll, pitch, yaw = quat_to_euler_deg(x[6:10])
             print(
                 f"t={t:.2f}s | z={x[2]:.3f} m | vz={x[5]:.3f} m/s | "
-                f"edf={u[0]:.2f}% | servo={np.max(np.abs(u[1:])):.2f}deg"
-            )
+                f"roll={roll:.2f}deg | pitch={pitch:.2f}deg | yaw={yaw:.2f}deg | "
+                f"edf={u[0]:.2f}% | servo_1={u[1]:.2f}deg | servo_2={u[2]:.2f}deg | "
+                f"servo_3={u[3]:.2f}deg | servo_4={u[4]:.2f}deg")
 
     log_x = np.array(log_x)
     log_u = np.array(log_u)
@@ -126,7 +177,6 @@ def main():
     ####################################################################
     # Graf
     ####################################################################
-
     fig, axs = plt.subplots(3, 1, figsize=(12, 8), sharex=True)
 
     axs[0].plot(log_t, log_x[:, 0], label="x")

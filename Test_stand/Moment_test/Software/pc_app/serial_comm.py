@@ -9,6 +9,8 @@
 from __future__ import annotations
 
 import time
+import threading
+from queue import Queue
 from typing import Optional
 
 try:
@@ -18,8 +20,37 @@ except ImportError:  # pragma: no cover
     serial = None
     list_ports = None
 
-from .logger import DataLogger
-from .protocol import SIG_SOF
+try:
+    from .logger import DataLogger
+except ImportError:
+    class DataLogger:  # type: ignore[no-redef]
+        """No-op fallback because this standalone test has no logger module."""
+
+        def log_frame(self, _direction: str, _frame: bytes) -> None:
+            pass
+
+try:
+    from .protocol import (
+        ID_DRONE,
+        ID_PC,
+        FLAG_STREAM,
+        OPT_TELEMETRY,
+        PROTOCOL_VER,
+        SIG_SOF,
+        decode_opt_telemetry,
+        parse_frame,
+    )
+except ImportError:
+    from protocol import (
+        ID_DRONE,
+        ID_PC,
+        FLAG_STREAM,
+        OPT_TELEMETRY,
+        PROTOCOL_VER,
+        SIG_SOF,
+        decode_opt_telemetry,
+        parse_frame,
+    )
 
 
 class SerialManager:
@@ -158,3 +189,64 @@ class SerialManager:
                 break
             time.sleep(0.01)
         return bytes(out)
+
+
+class DroneTelemetryReader(threading.Thread):
+    """Continuously read and decode DUT telemetry frames into a queue."""
+
+    def __init__(self, ser: "serial.Serial", out_queue: Queue) -> None:
+        super().__init__(daemon=True)
+        self.ser = ser
+        self.out_queue = out_queue
+        self._stop_event = threading.Event()
+        self._buffer = bytearray()
+
+    def stop(self) -> None:
+        self._stop_event.set()
+
+    def _read_frame(self) -> bytes | None:
+        chunk = self.ser.read(1)
+        if chunk:
+            self._buffer.extend(chunk)
+
+        while len(self._buffer) >= 2:
+            if self._buffer[0] != SIG_SOF:
+                del self._buffer[0]
+                continue
+
+            total_len = 2 + self._buffer[1]
+            if len(self._buffer) < total_len:
+                return None
+
+            frame = bytes(self._buffer[:total_len])
+            del self._buffer[:total_len]
+            return frame
+        return None
+
+    def run(self) -> None:
+        while not self._stop_event.is_set():
+            try:
+                raw_frame = self._read_frame()
+                if raw_frame is None:
+                    continue
+
+                frame = parse_frame(raw_frame)
+                if (
+                    frame is None
+                    or frame.version != PROTOCOL_VER
+                    or frame.flags != FLAG_STREAM
+                    or frame.src != ID_DRONE
+                    or frame.dst != ID_PC
+                    or frame.opcode != OPT_TELEMETRY
+                ):
+                    continue
+
+                telemetry = decode_opt_telemetry(frame.payload)
+                if telemetry is None:
+                    continue
+
+                telemetry["pc_time_s"] = time.time()
+                self.out_queue.put(telemetry)
+            except (OSError, ValueError):
+                if not self._stop_event.is_set():
+                    time.sleep(0.01)

@@ -9,9 +9,9 @@ if str(AMON_ROOT) not in sys.path:
     sys.path.insert(0, str(AMON_ROOT))
 
 from model_numpy.parameters import AmonParams
-from model_casadi.parameters import AmonParamsCasadi, NX, NU
+from model_casadi.parameters import AmonParamsCasadi, NU, state_dimension
 from model_casadi.model_builder.build_model import build_model
-from model_casadi.model_builder.build_discrete_model import build_discrete_model
+from amon.model_casadi.model_builder.build_model_discrete import build_discrete_model
 from model_casadi.control.casadi_nmpc import build_nmpc
 from model_casadi.control.nmpc_config import (
     NMPC_DT,
@@ -35,29 +35,30 @@ def main():
     # CONTINUOUS MODEL - x_dot = f(x,u)
     # ------------------------------------------------------------
     f = build_model(params, model_type=NMPC_MODEL_TYPE)  # "instant", "1st_order", "2nd_order"
+    nx = state_dimension(NMPC_MODEL_TYPE)
 
     # ------------------------------------------------------------
     # DISCRETE MODEL - x_{k+1} = F(x_k, u_k)
     # ------------------------------------------------------------
     dt = NMPC_DT
-    F = build_discrete_model(f, NX, NU, dt)
+    F = build_discrete_model(f, nx, NU, dt)
 
     # ------------------------------------------------------------
     # Algoritem vodenja: NMPC
     # ------------------------------------------------------------
     N = NMPC_N
-    opti, X, U, X0, X_ref, U_prev = build_nmpc(F, NX, NU, N, dt)
+    opti, X, U, X0, X_ref, U_prev = build_nmpc(F, nx, NU, N, dt)
 
     # --------------------------------------------------------
     # INITIAL STATE
     # --------------------------------------------------------
-    x = np.zeros(NX)
+    x = np.zeros(nx)
     x[6] = 1.0
 
     # --------------------------------------------------------
     # TARGET (hover)
     # --------------------------------------------------------
-    xref = np.zeros(NX)
+    xref = np.zeros(nx)
     xref[2] = 1.0  # z = 1 m
     xref[6] = 1.0  # enotski quaternion, brez rotacije
 
@@ -67,12 +68,12 @@ def main():
     u_hover = U_HOVER
     u_prev = np.array([u_hover, 0.0, 0.0, 0.0, 0.0])
 
-    x_init = np.zeros((NX, N + 1))
+    x_init = np.zeros((nx, N + 1))
     u_init = np.tile(u_prev.reshape(NU, 1), (1, N))
     x_rollout = x.copy()
     x_init[:, 0] = x_rollout
     for k in range(N):
-        x_rollout = np.array(F(x_rollout, u_prev).full()).reshape(NX)
+        x_rollout = np.array(F(x_rollout, u_prev).full()).reshape(nx)
         x_init[:, k + 1] = x_rollout
 
     opti.set_initial(X, x_init)
@@ -102,7 +103,7 @@ def main():
         u = u_sol[:, 0]
 
         x_next = F(x, u)
-        x = np.array(x_next.full()).reshape(NX)
+        x = np.array(x_next.full()).reshape(nx)
         u_prev = u
 
         # Warm-start: premakni optimalno trajektorijo za en korak naprej.

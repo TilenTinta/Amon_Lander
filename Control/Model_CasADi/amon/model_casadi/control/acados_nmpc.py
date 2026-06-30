@@ -65,9 +65,9 @@ def build_ocp(model, nx, nu, N, dt, code_export_dir=None, generate=True, build=F
     # --------------------------------------------------------
     # COST
     # --------------------------------------------------------
-    scale_x = scale_x_array()
+    scale_x = scale_x_array(nx)
     scale_u = scale_u_array()
-    Q_raw = q_raw_array()
+    Q_raw = q_raw_array(nx)
     R_raw = r_raw_array()
 
     # Same tuning idea as the stable CasADi NMPC: penalize normalized errors.
@@ -112,16 +112,17 @@ def build_ocp(model, nx, nu, N, dt, code_export_dir=None, generate=True, build=F
     # STM32 / embedded settings
     # --------------------------------------------------------
     ocp.solver_options.with_solution_sens_wrt_params = False
-    ocp.solver_options.sim_method_num_stages = 4
-    ocp.solver_options.sim_method_num_steps = 2
+    ocp.solver_options.sim_method_num_stages = 2 #4
+    ocp.solver_options.sim_method_num_steps = 1 #2
     ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
     ocp.solver_options.integrator_type = "ERK"
     ocp.solver_options.nlp_solver_type = "SQP_RTI"
     ocp.solver_options.qp_solver_cond_N = N
-    ocp.solver_options.nlp_solver_max_iter = 5
+    ocp.solver_options.nlp_solver_max_iter = 1 #5
     ocp.solver_options.ext_fun_compile_flags = "-O2"
     ocp.solver_options.print_level = 0
     ocp.solver_options.qp_solver_iter_max = 20
+    ocp.solver_options.acados_with_static_memory = 1     # disables malloc
 
     if code_export_dir is None:
         code_export_dir = os.path.abspath(

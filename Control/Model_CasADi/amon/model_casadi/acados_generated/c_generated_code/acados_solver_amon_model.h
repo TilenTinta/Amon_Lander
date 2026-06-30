@@ -36,13 +36,13 @@
 #include "acados_c/ocp_nlp_interface.h"
 #include "acados_c/external_function_interface.h"
 
-#define AMON_MODEL_NX     23
+#define AMON_MODEL_NX     13
 #define AMON_MODEL_NZ     0
 #define AMON_MODEL_NU     5
 #define AMON_MODEL_NP     0
 #define AMON_MODEL_NP_GLOBAL     0
 #define AMON_MODEL_NBX    0
-#define AMON_MODEL_NBX0   23
+#define AMON_MODEL_NBX0   13
 #define AMON_MODEL_NBU    5
 #define AMON_MODEL_NSBX   0
 #define AMON_MODEL_NSBU   0
@@ -61,10 +61,10 @@
 #define AMON_MODEL_NG     0
 #define AMON_MODEL_NBXN   0
 #define AMON_MODEL_NGN    0
-#define AMON_MODEL_NY0    28
-#define AMON_MODEL_NY     28
-#define AMON_MODEL_NYN    23
-#define AMON_MODEL_N      20
+#define AMON_MODEL_NY0    18
+#define AMON_MODEL_NY     18
+#define AMON_MODEL_NYN    13
+#define AMON_MODEL_N      5
 #define AMON_MODEL_NH     0
 #define AMON_MODEL_NHN    0
 #define AMON_MODEL_NH0    0

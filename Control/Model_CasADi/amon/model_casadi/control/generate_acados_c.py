@@ -12,7 +12,7 @@ if str(ACADOS_TEMPLATE_ROOT) not in sys.path:
     sys.path.insert(0, str(ACADOS_TEMPLATE_ROOT))
 
 from model_numpy.parameters import AmonParams
-from model_casadi.parameters import AmonParamsCasadi
+from model_casadi.parameters import AmonParamsCasadi, state_dimension
 from model_casadi.model_builder.build_model import build_model
 from model_casadi.control.acados_nmpc import (
     build_ocp,
@@ -34,7 +34,7 @@ def main():
     # Gradnja acados modela in solverja v C (za NMPC)
     ####################################################################
     params = AmonParamsCasadi(AmonParams())
-    x_dim = 23
+    x_dim = state_dimension(NMPC_MODEL_TYPE)
     u_dim = 5
     N = NMPC_N
     dt = NMPC_DT

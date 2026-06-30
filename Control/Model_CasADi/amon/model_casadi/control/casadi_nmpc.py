@@ -3,12 +3,12 @@ from casadi import *
 from model_casadi.control.nmpc_config import (
     INPUT_LOWER,
     INPUT_UPPER,
-    Q_RAW,
     R_DELTA_RAW,
     R_RAW,
     SCALE_U,
-    SCALE_X,
     U_HOVER,
+    q_raw_array,
+    scale_x_array,
 )
 
 
@@ -34,13 +34,13 @@ def build_nmpc(F, nx, nu, N, dt):
     # --------------------------------------------------------
     # COST FUNCTION
     # --------------------------------------------------------
-    scale_x = SCALE_X
+    scale_x = scale_x_array(nx)
 
     # Ukazi so v procentih/stopinjah. Skala 20 pomeni, da je 20 enot ze
     # velik odmik, zato optimizer ne skace po celotnem aktuatorskem obmocju.
     scale_u = SCALE_U
 
-    Q = diag(Q_RAW)
+    Q = diag(q_raw_array(nx))
 
     R = diag(R_RAW)
 

@@ -28,11 +28,72 @@
 #define DT 0.01
 #define T_SIM 10.0
 #define U_HOVER 90.0
+#define INITIAL_ROLL_DEG 5.0
+#define INITIAL_PITCH_DEG 5.0
+#define INITIAL_YAW_DEG 2.0
+#define PI 3.14159265358979323846
 
 
 static double clamp(double value, double min_value, double max_value)
 {
     return fmax(min_value, fmin(max_value, value));
+}
+
+
+static double deg_to_rad(double deg)
+{
+    return deg * PI / 180.0;
+}
+
+
+static double rad_to_deg(double rad)
+{
+    return rad * 180.0 / PI;
+}
+
+
+static void euler_deg_to_quat(double roll_deg, double pitch_deg, double yaw_deg, double *q)
+{
+    double roll = deg_to_rad(roll_deg);
+    double pitch = deg_to_rad(pitch_deg);
+    double yaw = deg_to_rad(yaw_deg);
+
+    double cr = cos(roll / 2.0);
+    double sr = sin(roll / 2.0);
+    double cp = cos(pitch / 2.0);
+    double sp = sin(pitch / 2.0);
+    double cy = cos(yaw / 2.0);
+    double sy = sin(yaw / 2.0);
+
+    q[0] = cr * cp * cy + sr * sp * sy;
+    q[1] = sr * cp * cy - cr * sp * sy;
+    q[2] = cr * sp * cy + sr * cp * sy;
+    q[3] = cr * cp * sy - sr * sp * cy;
+}
+
+
+static void quat_to_euler_deg(const double *q, double *roll_deg, double *pitch_deg, double *yaw_deg)
+{
+    double qw = q[0];
+    double qx = q[1];
+    double qy = q[2];
+    double qz = q[3];
+
+    double sinr_cosp = 2.0 * (qw * qx + qy * qz);
+    double cosr_cosp = 1.0 - 2.0 * (qx * qx + qy * qy);
+    double roll = atan2(sinr_cosp, cosr_cosp);
+
+    double sinp = 2.0 * (qw * qy - qz * qx);
+    sinp = clamp(sinp, -1.0, 1.0);
+    double pitch = asin(sinp);
+
+    double siny_cosp = 2.0 * (qw * qz + qx * qy);
+    double cosy_cosp = 1.0 - 2.0 * (qy * qy + qz * qz);
+    double yaw = atan2(siny_cosp, cosy_cosp);
+
+    *roll_deg = rad_to_deg(roll);
+    *pitch_deg = rad_to_deg(pitch);
+    *yaw_deg = rad_to_deg(yaw);
 }
 
 
@@ -145,7 +206,12 @@ int main(void)
     // Začetno stanje
     // --------------------------------------------------------
     double x[NX] = {0.0};
-    x[6] = 1.0;
+    euler_deg_to_quat(
+        INITIAL_ROLL_DEG,
+        INITIAL_PITCH_DEG,
+        INITIAL_YAW_DEG,
+        &x[6]
+    );
 
     double u_prev[NU] = {U_HOVER, 0.0, 0.0, 0.0, 0.0};
 
@@ -161,7 +227,7 @@ int main(void)
     // --------------------------------------------------------
     // Simulacijska zanka
     // --------------------------------------------------------
-    printf("t,z,vz,edf,status\n");
+    printf("t,z,vz,roll,pitch,yaw,edf,servo_1,servo_2,servo_3,servo_4,status\n");
 
     for (int step = 0; step < n_steps; step++)
     {
@@ -212,7 +278,14 @@ int main(void)
 
         if ((step % 50) == 0 || step == n_steps - 1)
         {
-            printf("%0.2f,%0.6f,%0.6f,%0.6f,%d\n", t, x[2], x[5], u[0], status);
+            double roll;
+            double pitch;
+            double yaw;
+            quat_to_euler_deg(&x[6], &roll, &pitch, &yaw);
+            printf(
+                "t=%0.2f,z=%0.6fvz=,%0.6f,roll=%0.6f,pitch=%0.6f,yaw=%0.6f,edf=%0.6f,servo1=%0.6f,servo2=%0.6f,servo3=%0.6f,servo4=%0.6f,status:%d\n",
+                t, x[2], x[5], roll, pitch, yaw, u[0], u[1], u[2], u[3], u[4], status
+            );
         }
     }
 

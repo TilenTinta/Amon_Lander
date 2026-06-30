@@ -46,6 +46,42 @@ def unpack_state(x):
     return p, v, q, omega, T, T_dot, delta, delta_dot
 
 
+def unpack_state_instant(x):
+    p = x[X_P]
+    v = x[X_V]
+    q = x[X_Q]
+    omega = x[X_W]
+
+    return p, v, q, omega
+
+
+def unpack_state_1st_order(x):
+    p = x[X_P]
+    v = x[X_V]
+    q = x[X_Q]
+    omega = x[X_W]
+
+    T = x[13]
+    delta = x[14:18]
+
+    return p, v, q, omega, T, delta
+
+
+def unpack_state_2nd_order(x):
+    p = x[X_P]
+    v = x[X_V]
+    q = x[X_Q]
+    omega = x[X_W]
+
+    T = x[X_T]
+    T_dot = x[X_T_DOT]
+
+    delta = x[X_DELTA]
+    delta_dot = x[X_DELTA_DOT]
+
+    return p, v, q, omega, T, T_dot, delta, delta_dot
+
+
 # ============================================================
 # Unpack input
 # ============================================================
@@ -64,7 +100,7 @@ def full_dynamics_instant(x, u, params):
     Celoten Amon drone CasADi model (instant aktuatorji)
     """
 
-    p, v, q, omega, T, T_dot, delta, delta_dot = unpack_state(x)
+    p, v, q, omega = unpack_state_instant(x)
     edf_cmd, servo_cmd = unpack_input(u)
 
     # --------------------------------------------------------
@@ -92,26 +128,13 @@ def full_dynamics_instant(x, u, params):
     w_dot = omega_dot(omega, tau_b, params)
 
     # --------------------------------------------------------
-    # state-e prisilimo na command
-    # --------------------------------------------------------
-    dT = T_cmd - T
-    dT_dot = 0
-
-    ddelta = delta_cmd - delta
-    ddelta_dot = MX.zeros(4)
-
-    # --------------------------------------------------------
     # sestavi x_dot
     # --------------------------------------------------------
     x_dot = vertcat(
         p_dot,
         v_dot,
         q_dot,
-        w_dot,
-        dT,
-        dT_dot,
-        ddelta,
-        ddelta_dot
+        w_dot
     )
 
     return x_dot
@@ -126,7 +149,7 @@ def full_dynamics_1st_order(x, u, params):
     Celoten Amon drone CasADi model (1. red aktuatorji)
     """
 
-    p, v, q, omega, T, T_dot, delta, delta_dot = unpack_state(x)
+    p, v, q, omega, T, delta = unpack_state_1st_order(x)
     edf_cmd, servo_cmd = unpack_input(u)
 
     # --------------------------------------------------------
@@ -158,12 +181,6 @@ def full_dynamics_1st_order(x, u, params):
     w_dot = omega_dot(omega, tau_b, params)
 
     # --------------------------------------------------------
-    # Ignoriramo 2nd order dinamiko
-    # --------------------------------------------------------
-    dT_dot = 0
-    ddelta_dot = MX.zeros(4)
-
-    # --------------------------------------------------------
     # sestavi x_dot
     # --------------------------------------------------------
     x_dot = vertcat(
@@ -172,9 +189,7 @@ def full_dynamics_1st_order(x, u, params):
         q_dot,
         w_dot,
         dT,
-        dT_dot,
-        ddelta,
-        ddelta_dot
+        ddelta
     )
 
     return x_dot
@@ -189,7 +204,7 @@ def full_dynamics_2nd_order(x, u, params):
     Celoten Amon drone CasADi model (2. red aktuatorji)
     """
 
-    p, v, q, omega, T, T_dot, delta, delta_dot = unpack_state(x)
+    p, v, q, omega, T, T_dot, delta, delta_dot = unpack_state_2nd_order(x)
     edf_cmd, servo_cmd = unpack_input(u)
 
     # --------------------------------------------------------
