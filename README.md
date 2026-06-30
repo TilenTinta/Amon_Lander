@@ -41,8 +41,9 @@
 Amon Lander is an educational lander/hopper platform designed to demonstrate vertical takeoff/landing and attitude control with thrust‑vectoring fins. The project emphasizes **building everything from scratch** and using mostly **free maker‑friendly tools**.
 
 > [!INFO]
-> First flight with my support: 30.06.2026
->   Plan was to test all system together (frame, electronics, communications, protocol, regulator, ground station, etc.)
+> **First integrated flight test:** 30.06.2026
+>
+> The goal of this flight was to validate the complete system, including the airframe, electronics, communications, protocol, flight controller, and ground station and have some fun!
 
 ---
 

@@ -414,19 +414,20 @@ void amon_model_acados_setup_nlp_in(amon_model_solver_capsule* capsule, const in
     {
         // set time_steps
     
-        double time_step = 0.02;
+        double time_step = 0.16666666666666666;
         for (int i = 0; i < N; i++)
         {
             ocp_nlp_in_set(nlp_config, nlp_dims, nlp_in, i, "Ts", &time_step);
         }
         // set cost scaling
         double* cost_scaling = malloc((N+1)*sizeof(double));
-        cost_scaling[0] = 0.02;
-        cost_scaling[1] = 0.02;
-        cost_scaling[2] = 0.02;
-        cost_scaling[3] = 0.02;
-        cost_scaling[4] = 0.02;
-        cost_scaling[5] = 1;
+        cost_scaling[0] = 0.16666666666666666;
+        cost_scaling[1] = 0.16666666666666666;
+        cost_scaling[2] = 0.16666666666666666;
+        cost_scaling[3] = 0.16666666666666666;
+        cost_scaling[4] = 0.16666666666666666;
+        cost_scaling[5] = 0.16666666666666666;
+        cost_scaling[6] = 1;
         for (int i = 0; i <= N; i++)
         {
             ocp_nlp_cost_model_set(nlp_config, nlp_dims, nlp_in, i, "scaling", &cost_scaling[i]);
@@ -803,7 +804,7 @@ static void amon_model_acados_create_set_opts(amon_model_solver_capsule* capsule
 
     // set up sim_method_num_stages
     // all sim_method_num_stages are identical
-    int sim_method_num_stages = 2;
+    int sim_method_num_stages = 1;
     for (int i = 0; i < N; i++)
         ocp_nlp_solver_opts_set_at_stage(nlp_config, nlp_opts, i, "dynamics_num_stages", &sim_method_num_stages);
 
@@ -824,7 +825,7 @@ static void amon_model_acados_create_set_opts(amon_model_solver_capsule* capsule
     ocp_nlp_solver_opts_set(nlp_config, nlp_opts, "levenberg_marquardt", &levenberg_marquardt);
 
     /* options QP solver */
-    int qp_solver_cond_N;const int qp_solver_cond_N_ori = 5;
+    int qp_solver_cond_N;const int qp_solver_cond_N_ori = 1;
     qp_solver_cond_N = N < qp_solver_cond_N_ori ? N : qp_solver_cond_N_ori; // use the minimum value here
     ocp_nlp_solver_opts_set(nlp_config, nlp_opts, "qp_cond_N", &qp_solver_cond_N);
 
@@ -862,10 +863,12 @@ static void amon_model_acados_create_set_opts(amon_model_solver_capsule* capsule
     double anderson_activation_threshold = 10;
     ocp_nlp_solver_opts_set(nlp_config, nlp_opts, "anderson_activation_threshold", &anderson_activation_threshold);
 
-    int qp_solver_iter_max = 20;
+    int qp_solver_iter_max = 3;
     ocp_nlp_solver_opts_set(nlp_config, nlp_opts, "qp_iter_max", &qp_solver_iter_max);
 
 
+    int qp_solver_warm_start = 1;
+    ocp_nlp_solver_opts_set(nlp_config, nlp_opts, "qp_warm_start", &qp_solver_warm_start);
 
     int print_level = 0;
     ocp_nlp_solver_opts_set(nlp_config, nlp_opts, "print_level", &print_level);
@@ -1154,7 +1157,7 @@ void amon_model_acados_print_stats(amon_model_solver_capsule* capsule)
         printf("stat_n_max = %d is too small, increase it in the template!\n", stat_n_max);
         exit(1);
     }
-    double stat[32];
+    double stat[64];
     ocp_nlp_get(capsule->nlp_solver, "statistics", stat);
 
     int nrow = nlp_iter+1 < stat_m ? nlp_iter+1 : stat_m;

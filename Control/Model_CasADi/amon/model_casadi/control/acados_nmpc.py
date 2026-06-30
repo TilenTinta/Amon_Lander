@@ -112,17 +112,37 @@ def build_ocp(model, nx, nu, N, dt, code_export_dir=None, generate=True, build=F
     # STM32 / embedded settings
     # --------------------------------------------------------
     ocp.solver_options.with_solution_sens_wrt_params = False
-    ocp.solver_options.sim_method_num_stages = 2 #4
+    ocp.solver_options.with_value_sens_wrt_params = False
+    ocp.solver_options.sim_method_num_stages = 1 #2
     ocp.solver_options.sim_method_num_steps = 1 #2
     ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
     ocp.solver_options.integrator_type = "ERK"
     ocp.solver_options.nlp_solver_type = "SQP_RTI"
-    ocp.solver_options.qp_solver_cond_N = N
-    ocp.solver_options.nlp_solver_max_iter = 1 #5
-    ocp.solver_options.ext_fun_compile_flags = "-O2"
+    ocp.solver_options.qp_solver_cond_N = 1 # N
+    ocp.solver_options.nlp_solver_max_iter = 3 #5,1
+    ocp.solver_options.ext_fun_compile_flags = "-O3 -ffast-math -funroll-loops"
     ocp.solver_options.print_level = 0
-    ocp.solver_options.qp_solver_iter_max = 20
+    ocp.solver_options.qp_solver_iter_max = 3 #20 >> 10
     ocp.solver_options.acados_with_static_memory = 1     # disables malloc
+    ocp.solver_options.hpipm_ref = 1  # Use single precision HPIPM
+    ocp.solver_options.blasfeo_ref = 1  # Use single precision BLASFEO
+    ocp.solver_options.tf = 1.0  # Keep timing realistic
+    ocp.solver_options.qp_solver_warm_start = 1  # Enable warm-starting
+    ocp.solver_options.sens_method = "forw"  # Use forward sensitivity only 
+    #ocp.solver_options.sens_forw_hess = 0    # Disable Hessian in sensitivity (instead of sens_method = "forw")
+
+    # ocp.solver_options.with_solution_sens_wrt_params = False
+    # ocp.solver_options.sim_method_num_stages = 2 #4
+    # ocp.solver_options.sim_method_num_steps = 1 #2
+    # ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
+    # ocp.solver_options.integrator_type = "ERK"
+    # ocp.solver_options.nlp_solver_type = "SQP_RTI"
+    # ocp.solver_options.qp_solver_cond_N = N
+    # ocp.solver_options.nlp_solver_max_iter = 1 #5
+    # ocp.solver_options.ext_fun_compile_flags = "-O2"
+    # ocp.solver_options.print_level = 0
+    # ocp.solver_options.qp_solver_iter_max = 20
+    # ocp.solver_options.acados_with_static_memory = 1     # disables malloc
 
     if code_export_dir is None:
         code_export_dir = os.path.abspath(

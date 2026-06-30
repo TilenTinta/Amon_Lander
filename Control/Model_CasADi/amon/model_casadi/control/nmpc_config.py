@@ -9,7 +9,7 @@ U_HOVER = 90.0
 # NMPC TIMING
 # --------------------------------------------------------
 NMPC_DT = 0.02      # 100Hz = 0.01, 50Hz = 0.02
-NMPC_N = 5         # horizont = NMPC_DT * NMPC_N
+NMPC_N = 6         # horizont = NMPC_DT * NMPC_N
 NMPC_MODEL_TYPE = "instant"  # "instant", "1st_order", "2nd_order"
 SIM_TIME = 10.0
 

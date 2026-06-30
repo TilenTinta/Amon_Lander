@@ -1,0 +1,6 @@
+main_memory_profile_amon_model.c:131:13:print_heap_stats	64	dynamic,bounded
+main_memory_profile_amon_model.c:66:7:__wrap_malloc	16	static
+main_memory_profile_amon_model.c:72:7:__wrap_calloc	16	static
+main_memory_profile_amon_model.c:84:6:__wrap_free	8	static
+main_memory_profile_amon_model.c:96:7:__wrap_realloc	32	static
+main_memory_profile_amon_model.c:192:5:main	496	dynamic,bounded

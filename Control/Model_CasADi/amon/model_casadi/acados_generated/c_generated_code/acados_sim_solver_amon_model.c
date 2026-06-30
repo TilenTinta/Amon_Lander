@@ -73,7 +73,7 @@ int amon_model_acados_sim_create(amon_model_sim_solver_capsule * capsule)
     const int np = AMON_MODEL_NP;
     bool tmp_bool;
 
-    double Tsim = 0.02;
+    double Tsim = 0.16666666666666666;
 
     capsule->acados_sim_mem = NULL;
 
@@ -146,7 +146,7 @@ int amon_model_acados_sim_create(amon_model_sim_solver_capsule * capsule)
     sim_opts_set(amon_model_sim_config, amon_model_sim_opts, "collocation_type", &collocation_type);
 
  
-    tmp_int = 2;
+    tmp_int = 1;
     sim_opts_set(amon_model_sim_config, amon_model_sim_opts, "num_stages", &tmp_int);
     tmp_int = 1;
     sim_opts_set(amon_model_sim_config, amon_model_sim_opts, "num_steps", &tmp_int);

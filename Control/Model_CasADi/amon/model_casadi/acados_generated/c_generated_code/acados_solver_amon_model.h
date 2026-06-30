@@ -64,7 +64,7 @@
 #define AMON_MODEL_NY0    18
 #define AMON_MODEL_NY     18
 #define AMON_MODEL_NYN    13
-#define AMON_MODEL_N      5
+#define AMON_MODEL_N      6
 #define AMON_MODEL_NH     0
 #define AMON_MODEL_NHN    0
 #define AMON_MODEL_NH0    0
